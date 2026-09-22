@@ -5,6 +5,7 @@ export interface AuthUser {
   name: string;
   email: string;
   roles: string[];
+  permissions: string[];
 }
 
 export interface AuthAdapter {
@@ -13,12 +14,20 @@ export interface AuthAdapter {
   logout(): void;
 }
 
+const demoAdmin = (email: string): AuthUser => ({
+  id: 'demo-user',
+  name: 'Alex Morgan',
+  email,
+  roles: ['Admin'],
+  permissions: ['*'],
+});
+
 const demoAdapter: AuthAdapter = {
   restore() {
     try {
       if (sessionStorage.getItem('aster:demo-session') !== 'active') return null;
       const email = sessionStorage.getItem('aster:demo-email') || 'alex@example.com';
-      return { id: 'demo-user', name: 'Alex Morgan', email, roles: ['Admin'] };
+      return demoAdmin(email);
     } catch {
       return null;
     }
@@ -30,7 +39,7 @@ const demoAdapter: AuthAdapter = {
     } catch {
       // Demo sessions intentionally degrade to in-memory state.
     }
-    return { id: 'demo-user', name: 'Alex Morgan', email, roles: ['Admin'] };
+    return demoAdmin(email);
   },
   logout() {
     try {
@@ -47,7 +56,7 @@ interface AuthContextValue {
   authenticated: boolean;
   login: (email: string) => void;
   logout: () => void;
-  can: (permission: string) => boolean;
+  can: (permission?: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue>(null!);
@@ -63,7 +72,11 @@ export function AuthProvider({ children, adapter = demoAdapter }: { children: Re
       adapter.logout();
       setUser(null);
     },
-    can: () => !!user,
+    can: (permission) => {
+      if (!user) return false;
+      if (!permission) return true;
+      return user.permissions.includes('*') || user.permissions.includes(permission);
+    },
   }), [adapter, user]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
