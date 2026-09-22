@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Suppliers() {
-  return <ModulePage moduleKey="suppliers" />;
-}
+import { SuppliersWorkspace } from '../erp/InventoryWorkspaces';
+export default SuppliersWorkspace;
