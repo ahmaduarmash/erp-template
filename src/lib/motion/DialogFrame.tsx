@@ -5,29 +5,37 @@ export default function DialogFrame({
   children,
   open,
   onExit,
-  duration,
+  variant,
+  enterDuration,
+  exitDuration,
+  enterEase,
+  exitEase,
 }: {
   children: ReactNode;
   open: boolean;
   onExit: () => void;
-  duration: number;
+  variant: 'modal' | 'drawer';
+  enterDuration: number;
+  exitDuration: number;
+  enterEase: [number, number, number, number];
+  exitEase: [number, number, number, number];
 }) {
+  const closed = variant === 'drawer'
+    ? { opacity: 0.98, x: 14, y: 0, scale: 1 }
+    : { opacity: 0, x: 0, y: 10, scale: 0.992 };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18, scale: 0.985 }}
-      animate={{
-        opacity: open ? 1 : 0,
-        y: open ? 0 : 12,
-        scale: open ? 1 : 0.992,
-      }}
+      initial={closed}
+      animate={open ? { opacity: 1, x: 0, y: 0, scale: 1 } : closed}
       transition={{
-        duration: Math.max(duration, 0.2),
-        ease: [0.22, 1, 0.36, 1],
+        duration: open ? enterDuration : exitDuration,
+        ease: open ? enterEase : exitEase,
       }}
       onAnimationComplete={() => {
         if (!open) onExit();
       }}
-      style={{ transformOrigin: '50% 16%' }}
+      style={{ transformOrigin: variant === 'modal' ? '50% 16%' : '100% 50%' }}
     >
       {children}
     </motion.div>
