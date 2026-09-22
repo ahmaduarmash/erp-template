@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Warehouses() {
-  return <ModulePage moduleKey="warehouses" />;
-}
+import { WarehousesWorkspace } from '../erp/InventoryWorkspaces';
+export default WarehousesWorkspace;
