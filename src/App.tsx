@@ -5,6 +5,8 @@ import { ThemeProvider } from './theme/ThemeProvider';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { PageSkeleton } from './components/feedback';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
+import { routeRegistry } from './config/routes';
+
 const Shell = lazy(() => import('./components/shell/AppShell'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -46,6 +48,23 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean 
   }
 }
 
+function permissionFor(key: string) {
+  return routeRegistry.find((route) => route.key === key)?.permission;
+}
+
+function Protected({ routeKey, children }: { routeKey: string; children: ReactNode }) {
+  const auth = useAuth();
+  const permission = permissionFor(routeKey);
+  if (auth.can(permission)) return children;
+  return (
+    <Result
+      status="403"
+      title="Access restricted"
+      subTitle="Your current role does not have permission to open this workspace."
+    />
+  );
+}
+
 function AppRoutes() {
   const auth = useAuth();
   return (
@@ -57,42 +76,30 @@ function AppRoutes() {
               <Routes>
                 <Route
                   path="/login"
-                  element={
-                    auth.authenticated ? (
-                      <Navigate to="/dashboard" replace />
-                    ) : (
-                      <Login onLogin={auth.login} />
-                    )
-                  }
+                  element={auth.authenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={auth.login} />}
                 />
                 <Route
-                  element={
-                    auth.authenticated ? (
-                      <Shell onLogout={auth.logout} />
-                    ) : (
-                      <Navigate to="/login" replace />
-                    )
-                  }
+                  element={auth.authenticated ? <Shell onLogout={auth.logout} /> : <Navigate to="/login" replace />}
                 >
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="system/notifications" element={<Notifications />} />
-                  <Route path="system/audit-log" element={<AuditLog />} />
-                  <Route path="system/users" element={<Users />} />
-                  <Route path="inventory/products" element={<Products />} />
-                  <Route path="inventory/stock-levels" element={<StockLevels />} />
-                  <Route path="inventory/warehouses" element={<Warehouses />} />
-                  <Route path="inventory/stock-transfers" element={<StockTransfers />} />
-                  <Route path="inventory/purchase-orders" element={<PurchaseOrders />} />
-                  <Route path="inventory/suppliers" element={<Suppliers />} />
-                  <Route path="accounting/chart-of-accounts" element={<Accounts />} />
-                  <Route path="accounting/journal-entries" element={<Journals />} />
-                  <Route path="accounting/sales-invoices" element={<Invoices />} />
-                  <Route path="accounting/payments" element={<Payments />} />
-                  <Route path="accounting/expenses" element={<Expenses />} />
-                  <Route path="accounting/customers" element={<Customers />} />
+                  <Route path="system/audit-log" element={<Protected routeKey="audit-log"><AuditLog /></Protected>} />
+                  <Route path="system/users" element={<Protected routeKey="users"><Users /></Protected>} />
+                  <Route path="inventory/products" element={<Protected routeKey="products"><Products /></Protected>} />
+                  <Route path="inventory/stock-levels" element={<Protected routeKey="stock-levels"><StockLevels /></Protected>} />
+                  <Route path="inventory/warehouses" element={<Protected routeKey="warehouses"><Warehouses /></Protected>} />
+                  <Route path="inventory/stock-transfers" element={<Protected routeKey="stock-transfers"><StockTransfers /></Protected>} />
+                  <Route path="inventory/purchase-orders" element={<Protected routeKey="purchase-orders"><PurchaseOrders /></Protected>} />
+                  <Route path="inventory/suppliers" element={<Protected routeKey="suppliers"><Suppliers /></Protected>} />
+                  <Route path="accounting/chart-of-accounts" element={<Protected routeKey="chart-of-accounts"><Accounts /></Protected>} />
+                  <Route path="accounting/journal-entries" element={<Protected routeKey="journal-entries"><Journals /></Protected>} />
+                  <Route path="accounting/sales-invoices" element={<Protected routeKey="sales-invoices"><Invoices /></Protected>} />
+                  <Route path="accounting/payments" element={<Protected routeKey="payments"><Payments /></Protected>} />
+                  <Route path="accounting/expenses" element={<Protected routeKey="expenses"><Expenses /></Protected>} />
+                  <Route path="accounting/customers" element={<Protected routeKey="customers"><Customers /></Protected>} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
