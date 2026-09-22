@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { csvCell } from '../src/lib/csv.ts';
 import { resolveConfig } from '../src/theme/resolveConfig.ts';
 import { templateConfig } from '../src/config/template.config.ts';
+import { routeRegistry } from '../src/config/routes.ts';
 import { modules, seedModule } from '../src/data/modules.ts';
 import { validateRecord } from '../src/lib/validation.ts';
 
@@ -92,4 +93,14 @@ test('Several thousand rows remain uniquely addressable', () => {
   }));
   assert.equal(new Set(rows.map((r) => r.id)).size, 5000);
   assert.equal(rows.filter((r) => r.id.includes('stress-49')).length, 111);
+});
+test('ERP routes use domain floorplans instead of one CRUD floorplan', () => {
+  const byKey = Object.fromEntries(routeRegistry.map((route) => [route.key, route]));
+  assert.equal(byKey['chart-of-accounts'].pageKind, 'TREE');
+  assert.equal(byKey['journal-entries'].pageKind, 'DOCUMENT');
+  assert.equal(byKey['stock-levels'].pageKind, 'ANALYTICAL');
+  assert.equal(byKey['purchase-orders'].pageKind, 'DOCUMENT');
+  assert.equal(byKey.users.pageKind, 'SECURITY');
+  for (const key of ['chart-of-accounts', 'journal-entries', 'stock-levels', 'purchase-orders'])
+    assert.notEqual(byKey[key].pageKind, 'CRUD');
 });
