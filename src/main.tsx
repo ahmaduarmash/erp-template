@@ -4,6 +4,7 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import '@fontsource-variable/public-sans';
 import './styles.css';
+import './erp.css';
 import App from './App';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
