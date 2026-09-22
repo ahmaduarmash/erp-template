@@ -7,6 +7,7 @@ import './styles.css';
 import './erp.css';
 import './design-v2.css';
 import './coa-v2.css';
+import './journal-v2.css';
 import App from './App';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
