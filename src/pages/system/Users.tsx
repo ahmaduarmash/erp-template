@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Users() {
-  return <ModulePage moduleKey="users" />;
-}
+import { SecurityWorkspace } from '../erp/SecurityWorkspace';
+export default SecurityWorkspace;
