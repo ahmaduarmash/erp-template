@@ -13,6 +13,8 @@ const Context = createContext<{
   config: TemplateConfig;
   dark: boolean;
   tokens: DesignTokens;
+  reducedMotion: boolean;
+  motionEnabled: boolean;
   setGroup: <K extends keyof TemplateConfig>(group: K, value: Partial<TemplateConfig[K]>) => void;
   reset: () => void;
   storageError: boolean;
@@ -21,7 +23,7 @@ const Context = createContext<{
 export const useTemplate = () => useContext(Context);
 
 function TokenSync({ children }: { children: ReactNode }) {
-  const { config, dark, tokens } = useTemplate();
+  const { config, dark, tokens, motionEnabled } = useTemplate();
 
   useEffect(() => {
     const variables = designTokensToCssVariables(tokens);
@@ -30,7 +32,7 @@ function TokenSync({ children }: { children: ReactNode }) {
 
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
     document.documentElement.dataset.density = config.layout.density;
-    document.documentElement.dataset.motion = config.motion.enabled ? 'on' : 'off';
+    document.documentElement.dataset.motion = motionEnabled ? 'on' : 'off';
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
     document.documentElement.style.fontSize = `${tokens.typography.rootSize}px`;
     document.title = `${config.brand.name} · Workspace`;
@@ -44,7 +46,7 @@ function TokenSync({ children }: { children: ReactNode }) {
     icon.href =
       config.brand.logoUrl ||
       `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="${tokens.semantic.actionPrimary}"/><path d="M16 5v22M5 16h22M8 8l16 16M8 24L24 8" stroke="white" stroke-width="3"/></svg>`)}`;
-  }, [config, dark, tokens]);
+  }, [config, dark, motionEnabled, tokens]);
 
   return children;
 }
@@ -55,15 +57,25 @@ export function ThemeProvider({ children, userId }: { children: ReactNode; userI
   const [systemDark, setSystemDark] = useState(
     () => matchMedia('(prefers-color-scheme: dark)').matches,
   );
+  const [reducedMotion, setReducedMotion] = useState(
+    () => matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
 
   useEffect(() => {
-    const media = matchMedia('(prefers-color-scheme: dark)');
-    const update = () => setSystemDark(media.matches);
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    const colorMedia = matchMedia('(prefers-color-scheme: dark)');
+    const motionMedia = matchMedia('(prefers-reduced-motion: reduce)');
+    const updateColor = () => setSystemDark(colorMedia.matches);
+    const updateMotion = () => setReducedMotion(motionMedia.matches);
+    colorMedia.addEventListener('change', updateColor);
+    motionMedia.addEventListener('change', updateMotion);
+    return () => {
+      colorMedia.removeEventListener('change', updateColor);
+      motionMedia.removeEventListener('change', updateMotion);
+    };
   }, []);
 
   const dark = config.theme.mode === 'dark' || (config.theme.mode === 'system' && systemDark);
+  const motionEnabled = config.motion.enabled && !reducedMotion;
   const tokens = useMemo(() => resolveDesignTokens(config, dark), [config, dark]);
 
   const value = useMemo(
@@ -71,12 +83,14 @@ export function ThemeProvider({ children, userId }: { children: ReactNode; userI
       config,
       dark,
       tokens,
+      reducedMotion,
+      motionEnabled,
       storageError,
       setGroup: <K extends keyof TemplateConfig>(group: K, patch: Partial<TemplateConfig[K]>) =>
         setConfig((previous) => ({ ...previous, [group]: { ...previous[group], ...patch } })),
       reset: () => setConfig(structuredClone(templateConfig)),
     }),
-    [config, dark, tokens, storageError],
+    [config, dark, motionEnabled, reducedMotion, tokens, storageError],
   );
 
   useEffect(() => {
@@ -108,7 +122,13 @@ export function ThemeProvider({ children, userId }: { children: ReactNode; userI
         fontFamily: tokens.typography.fontFamily,
         fontSize: tokens.typography.textMd,
         controlHeight: tokens.layout.controlHeight,
-        motion: config.motion.enabled,
+        motion: motionEnabled,
+        motionDurationFast: `${tokens.motion.micro}s`,
+        motionDurationMid: `${tokens.motion.standard}s`,
+        motionDurationSlow: `${tokens.motion.modalEnter}s`,
+        motionEaseInOut: tokens.motion.easingEnterCss,
+        motionEaseOut: tokens.motion.easingEnterCss,
+        motionEaseIn: tokens.motion.easingExitCss,
         boxShadow: tokens.elevation.sm,
         boxShadowSecondary: tokens.elevation.md,
       },
@@ -146,7 +166,7 @@ export function ThemeProvider({ children, userId }: { children: ReactNode; userI
         },
       },
     }),
-    [config.layout.density, config.motion.enabled, dark, tokens],
+    [config.layout.density, dark, motionEnabled, tokens],
   );
 
   return (
