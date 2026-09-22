@@ -4,11 +4,13 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/manrope';
 import '@fontsource-variable/public-sans';
 import './styles.css';
+import './theme/tokens/tailwind.css';
 import './erp.css';
 import './design-v2.css';
 import './coa-v2.css';
 import './journal-v2.css';
 import App from './App';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

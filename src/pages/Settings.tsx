@@ -28,6 +28,7 @@ import { useSound } from '../lib/sound/useSound';
 import { useFeedback } from '../components/feedback';
 import { useWorkspace } from '../data/WorkspaceProvider';
 import type { ReactNode } from 'react';
+
 function SettingRow({
   title,
   description,
@@ -47,11 +48,13 @@ function SettingRow({
     </div>
   );
 }
+
 export default function Settings() {
   const { config, setGroup, reset } = useTemplate();
   const sound = useSound();
   const feedback = useFeedback();
   const workspace = useWorkspace();
+
   const appearance = (
     <div className="settings-layout">
       <section className="panel settings-panel">
@@ -62,12 +65,7 @@ export default function Settings() {
         <SettingRow title="Color mode" description="Choose how your workspace looks.">
           <Radio.Group
             value={config.theme.mode}
-            onChange={(e) =>
-              setGroup('theme', {
-                mode: e.target.value,
-                algorithm: config.theme.algorithm === 'dark' ? 'default' : config.theme.algorithm,
-              })
-            }
+            onChange={(e) => setGroup('theme', { mode: e.target.value })}
             optionType="button"
             options={[
               {
@@ -145,18 +143,11 @@ export default function Settings() {
         <SettingRow title="Density" description="Spacing in forms, tables, and the shell.">
           <Select
             value={config.layout.density}
-            options={['compact', 'comfortable', 'spacious'].map((value) => ({
-              value,
-              label: value,
-            }))}
-            onChange={(density) => setGroup('layout', { density })}
-          />
-        </SettingRow>
-        <SettingRow title="Token algorithm">
-          <Select
-            value={config.theme.algorithm}
-            options={['default', 'dark', 'compact'].map((value) => ({ value, label: value }))}
-            onChange={(algorithm) => setGroup('theme', { algorithm })}
+            options={[
+              { value: 'compact', label: 'Compact' },
+              { value: 'comfortable', label: 'Comfortable' },
+            ]}
+            onChange={(density: 'compact' | 'comfortable') => setGroup('layout', { density })}
           />
         </SettingRow>
         <SettingRow title="Corner radius">
@@ -280,9 +271,7 @@ export default function Settings() {
               <Button
                 block
                 type="primary"
-                onClick={() => {
-                  feedback.success('Your theme is looking good');
-                }}
+                onClick={() => feedback.success('Your theme is looking good')}
               >
                 Preview interaction
               </Button>
@@ -299,6 +288,7 @@ export default function Settings() {
       </aside>
     </div>
   );
+
   return (
     <MotionSurface page>
       <PageHeader

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { csvCell } from '../src/lib/csv.ts';
 import { resolveConfig } from '../src/theme/resolveConfig.ts';
 import { templateConfig } from '../src/config/template.config.ts';
+import { generateShadeScale, resolveDesignTokens } from '../src/theme/tokens/index.ts';
 import { routeRegistry } from '../src/config/routes.ts';
 import { modules, seedModule } from '../src/data/modules.ts';
 import { validateRecord } from '../src/lib/validation.ts';
@@ -13,19 +14,28 @@ test('CSV escapes quotes, commas, and formula injection', () => {
     assert.ok(csvCell(value).startsWith('"\''));
   assert.equal(csvCell(null), '""');
 });
-test('Config accepts valid overrides without mutating defaults', () => {
+
+test('Config accepts supported overrides without mutating defaults', () => {
   const resolved = resolveConfig({
     theme: { mode: 'dark', algorithm: 'compact', primaryColor: '#123456' },
     typography: { fontFamily: 'Manrope' },
+    layout: { density: 'compact' },
     sound: { categories: { notification: false } },
   });
   assert.equal(resolved.theme.mode, 'dark');
-  assert.equal(resolved.theme.algorithm, 'compact');
+  assert.equal(resolved.theme.primaryColor, '#123456');
   assert.equal(resolved.typography.fontFamily, 'Manrope');
+  assert.equal(resolved.layout.density, 'compact');
   assert.equal(resolved.sound.categories.click, true);
   assert.equal(resolved.sound.categories.notification, false);
+  assert.equal('algorithm' in resolved.theme, false);
   assert.equal(templateConfig.theme.mode, 'light');
 });
+
+test('Legacy spacious density migrates to comfortable', () => {
+  assert.equal(resolveConfig({ layout: { density: 'spacious' } }).layout.density, 'comfortable');
+});
+
 test('Malformed preferences preserve a renderable configuration', () => {
   for (const input of [null, 42, [], { theme: null }])
     assert.deepEqual(resolveConfig(input), templateConfig);
@@ -44,6 +54,27 @@ test('Malformed preferences preserve a renderable configuration', () => {
   assert.equal(config.brand.name, templateConfig.brand.name);
   assert.deepEqual(config.table.hiddenColumns, ['status']);
 });
+
+test('Palette generator anchors the selected color and produces a usable scale', () => {
+  const scale = generateShadeScale('#6155d9');
+  assert.equal(scale[500], '#6155d9');
+  assert.notEqual(scale[50], scale[900]);
+  assert.match(scale[50], /^#[\da-f]{6}$/i);
+  assert.match(scale[900], /^#[\da-f]{6}$/i);
+});
+
+test('Runtime tokens derive semantic light/dark, density, radius, type and layout values', () => {
+  const light = resolveDesignTokens(templateConfig, false);
+  const dark = resolveDesignTokens(templateConfig, true);
+  assert.equal(light.primitive.primary[500], templateConfig.theme.primaryColor);
+  assert.notEqual(light.semantic.bgBase, dark.semantic.bgBase);
+  assert.equal(light.radius.card, templateConfig.theme.borderRadius);
+  assert.equal(light.layout.contentMaxWidth, 'none');
+  assert.ok(light.spacing.space6 > light.spacing.space3);
+  assert.ok(light.typography.headingLg > light.typography.textMd);
+  assert.notEqual(light.elevation.md, dark.elevation.md);
+});
+
 test('Every module has unique seed IDs, valid statuses and required fields', () => {
   assert.equal(modules.length, 13);
   for (const module of modules) {
@@ -56,6 +87,7 @@ test('Every module has unique seed IDs, valid statuses and required fields', () 
     }
   }
 });
+
 test('Journal, transfer, invoice, and duplicate constraints', () => {
   assert.match(
     validateRecord(
@@ -85,6 +117,7 @@ test('Journal, transfer, invoice, and duplicate constraints', () => {
   assert.match(validateRecord('products', { name: ' example ' }, [row]), /already exists/);
   assert.equal(validateRecord('products', { name: 'Example' }, [row], '1'), undefined);
 });
+
 test('Several thousand rows remain uniquely addressable', () => {
   const seed = seedModule(modules[0]);
   const rows = Array.from({ length: 5000 }, (_, i) => ({
@@ -94,6 +127,7 @@ test('Several thousand rows remain uniquely addressable', () => {
   assert.equal(new Set(rows.map((r) => r.id)).size, 5000);
   assert.equal(rows.filter((r) => r.id.includes('stress-49')).length, 111);
 });
+
 test('ERP routes use domain floorplans instead of one CRUD floorplan', () => {
   const byKey = Object.fromEntries(routeRegistry.map((route) => [route.key, route]));
   assert.equal(byKey['chart-of-accounts'].pageKind, 'TREE');
