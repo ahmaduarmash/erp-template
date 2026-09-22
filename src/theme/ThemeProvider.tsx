@@ -3,46 +3,38 @@ import { App, ConfigProvider, theme } from 'antd';
 import { templateConfig, type TemplateConfig } from '../config/template.config';
 import { resolveConfig } from './resolveConfig';
 import { readStored, writeStored } from '../lib/storage';
+import { designTokensToCssVariables, resolveDesignTokens, type DesignTokens } from './tokens';
 
 function loadConfig(userId: string): TemplateConfig {
   return resolveConfig(readStored<unknown>(`aster:preferences:v1:${userId}`, {}));
 }
+
 const Context = createContext<{
   config: TemplateConfig;
   dark: boolean;
+  tokens: DesignTokens;
   setGroup: <K extends keyof TemplateConfig>(group: K, value: Partial<TemplateConfig[K]>) => void;
   reset: () => void;
   storageError: boolean;
 }>(null!);
+
 export const useTemplate = () => useContext(Context);
+
 function TokenSync({ children }: { children: ReactNode }) {
-  const { token } = theme.useToken();
-  const { config, dark } = useTemplate();
+  const { config, dark, tokens } = useTemplate();
+
   useEffect(() => {
-    const vars: Record<string, string> = {
-      '--color-primary': token.colorPrimary,
-      '--color-accent': config.theme.accentColor,
-      '--primary-soft': token.colorPrimaryBg,
-      '--surface': token.colorBgContainer,
-      '--canvas': token.colorBgLayout,
-      '--text': token.colorText,
-      '--muted': token.colorTextSecondary,
-      '--line': token.colorBorderSecondary,
-      '--radius-base': `${token.borderRadius}px`,
-      '--font-sans': token.fontFamily,
-      '--font-size': `${token.fontSize}px`,
-      '--space': `${{ compact: 16, comfortable: 24, spacious: 32 }[config.layout.density] || 24}px`,
-      '--success': token.colorSuccess,
-      '--warning': token.colorWarning,
-      '--error': token.colorError,
-    };
-    for (const [name, value] of Object.entries(vars))
+    const variables = designTokensToCssVariables(tokens);
+    for (const [name, value] of Object.entries(variables))
       document.documentElement.style.setProperty(name, value);
+
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.dataset.density = config.layout.density;
     document.documentElement.dataset.motion = config.motion.enabled ? 'on' : 'off';
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-    document.documentElement.style.fontSize = `${(token.fontSize / 15) * 16}px`;
+    document.documentElement.style.fontSize = `${tokens.typography.rootSize}px`;
     document.title = `${config.brand.name} · Workspace`;
+
     let icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (!icon) {
       icon = document.createElement('link');
@@ -51,100 +43,117 @@ function TokenSync({ children }: { children: ReactNode }) {
     }
     icon.href =
       config.brand.logoUrl ||
-      `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="${config.theme.primaryColor}"/><path d="M16 5v22M5 16h22M8 8l16 16M8 24L24 8" stroke="white" stroke-width="3"/></svg>`)}`;
-  }, [token, config, dark]);
+      `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="${tokens.semantic.actionPrimary}"/><path d="M16 5v22M5 16h22M8 8l16 16M8 24L24 8" stroke="white" stroke-width="3"/></svg>`)}`;
+  }, [config, dark, tokens]);
+
   return children;
 }
+
 export function ThemeProvider({ children, userId }: { children: ReactNode; userId: string }) {
   const [config, setConfig] = useState(() => loadConfig(userId));
   const [storageError, setStorageError] = useState(false);
   const [systemDark, setSystemDark] = useState(
     () => matchMedia('(prefers-color-scheme: dark)').matches,
   );
+
   useEffect(() => {
     const media = matchMedia('(prefers-color-scheme: dark)');
     const update = () => setSystemDark(media.matches);
     media.addEventListener('change', update);
     return () => media.removeEventListener('change', update);
   }, []);
-  const dark =
-    config.theme.mode === 'dark' ||
-    (config.theme.mode === 'system' && systemDark) ||
-    config.theme.algorithm === 'dark';
+
+  const dark = config.theme.mode === 'dark' || (config.theme.mode === 'system' && systemDark);
+  const tokens = useMemo(() => resolveDesignTokens(config, dark), [config, dark]);
+
   const value = useMemo(
     () => ({
       config,
       dark,
+      tokens,
       storageError,
       setGroup: <K extends keyof TemplateConfig>(group: K, patch: Partial<TemplateConfig[K]>) =>
         setConfig((previous) => ({ ...previous, [group]: { ...previous[group], ...patch } })),
       reset: () => setConfig(structuredClone(templateConfig)),
     }),
-    [config, dark, storageError],
+    [config, dark, tokens, storageError],
   );
+
   useEffect(() => {
     setStorageError(!writeStored(`aster:preferences:v1:${userId}`, config));
   }, [config, userId]);
+
   const themeValue = useMemo(
     () => ({
-      algorithm: [
-        dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        ...(config.theme.algorithm === 'compact' || config.layout.density === 'compact'
-          ? [theme.compactAlgorithm]
-          : []),
-      ],
+      algorithm: dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
       token: {
-        colorPrimary: config.theme.primaryColor,
-        borderRadius: config.theme.borderRadius,
-        fontFamily: `'${config.typography.fontFamily} Variable', sans-serif`,
-        fontSize: { sm: 14, md: 15, lg: 16 }[config.typography.baseFontSize],
+        colorPrimary: tokens.semantic.actionPrimary,
+        colorPrimaryHover: tokens.semantic.actionPrimaryHover,
+        colorPrimaryActive: tokens.semantic.actionPrimaryActive,
+        colorBgBase: tokens.semantic.bgBase,
+        colorBgContainer: tokens.semantic.bgSurface,
+        colorBgElevated: tokens.semantic.bgElevated,
+        colorText: tokens.semantic.textPrimary,
+        colorTextSecondary: tokens.semantic.textSecondary,
+        colorTextDisabled: tokens.semantic.textDisabled,
+        colorBorder: tokens.semantic.borderDefault,
+        colorBorderSecondary: tokens.semantic.borderSubtle,
+        colorSuccess: tokens.semantic.success,
+        colorWarning: tokens.semantic.warning,
+        colorError: tokens.semantic.danger,
+        colorInfo: tokens.semantic.info,
+        borderRadius: tokens.radius.card,
+        borderRadiusSM: tokens.radius.sm,
+        borderRadiusLG: tokens.radius.lg,
+        fontFamily: tokens.typography.fontFamily,
+        fontSize: tokens.typography.textMd,
+        controlHeight: tokens.layout.controlHeight,
         motion: config.motion.enabled,
-        motionDurationFast: '0.12s',
-        motionDurationMid: '0.2s',
-        motionDurationSlow: '0.3s',
-        boxShadowSecondary: '0 16px 40px rgba(15, 23, 42, 0.12)',
+        boxShadow: tokens.elevation.sm,
+        boxShadowSecondary: tokens.elevation.md,
       },
       components: {
         Table: {
-          cellPaddingBlock: { compact: 8, comfortable: 12, spacious: 17 }[config.layout.density],
-          headerBg: dark ? '#16181d' : '#f7f8fb',
-          headerColor: dark ? 'rgba(255,255,255,.62)' : '#697386',
-          rowHoverBg: dark ? 'rgba(97,85,217,.10)' : 'rgba(97,85,217,.045)',
+          cellPaddingBlock: config.layout.density === 'compact' ? tokens.spacing.space2 : tokens.spacing.space3,
+          headerBg: tokens.semantic.bgSubtle,
+          headerColor: tokens.semantic.textSecondary,
+          rowHoverBg: tokens.semantic.bgSelected,
+          borderColor: tokens.semantic.borderDefault,
         },
         Button: {
-          primaryShadow: '0 7px 18px rgba(97, 85, 217, .18)',
+          primaryShadow: tokens.elevation.xs,
           defaultShadow: 'none',
           fontWeight: 590,
+          borderRadius: tokens.radius.control,
         },
+        Input: { borderRadius: tokens.radius.control },
+        Select: { borderRadius: tokens.radius.control },
+        DatePicker: { borderRadius: tokens.radius.control },
         Modal: {
-          borderRadiusLG: config.theme.borderRadius + 4,
-          paddingContentHorizontalLG: 24,
+          borderRadiusLG: tokens.radius.overlay,
+          paddingContentHorizontalLG: tokens.spacing.space6,
         },
         Drawer: {
-          paddingLG: 22,
+          paddingLG: tokens.spacing.space6,
         },
         Dropdown: {
-          borderRadiusLG: Math.max(10, config.theme.borderRadius),
+          borderRadiusLG: tokens.radius.overlay,
         },
         Tabs: {
-          inkBarColor: config.theme.primaryColor,
-          itemSelectedColor: config.theme.primaryColor,
+          inkBarColor: tokens.semantic.actionPrimary,
+          itemSelectedColor: tokens.semantic.actionPrimary,
+          itemHoverColor: tokens.semantic.actionPrimaryHover,
         },
       },
     }),
-    [config, dark],
+    [config.layout.density, config.motion.enabled, dark, tokens],
   );
+
   return (
     <Context.Provider value={value}>
       <ConfigProvider
         theme={themeValue}
-        componentSize={
-          config.layout.density === 'compact'
-            ? 'small'
-            : config.layout.density === 'spacious'
-              ? 'large'
-              : 'middle'
-        }
+        componentSize={config.layout.density === 'compact' ? 'small' : 'middle'}
       >
         <App>
           <TokenSync>{children}</TokenSync>

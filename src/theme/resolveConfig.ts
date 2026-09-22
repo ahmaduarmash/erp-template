@@ -1,26 +1,34 @@
 import { templateConfig, type TemplateConfig } from '../config/template.config.ts';
+
 type JsonObject = Record<string, unknown>;
 const object = (value: unknown): value is JsonObject =>
   !!value && typeof value === 'object' && !Array.isArray(value);
-/** Validate persisted overrides. Defaults remain authoritative for unknown/invalid fields. */
+
+/**
+ * Validate persisted preferences and migrate legacy values.
+ * Project defaults remain authoritative for unknown or invalid fields.
+ */
 export function resolveConfig(saved: unknown): TemplateConfig {
   const config = structuredClone(templateConfig);
   if (!object(saved)) return config;
+
   const allowed: Record<string, string[]> = {
     'theme.mode': ['light', 'dark', 'system'],
-    'theme.algorithm': ['default', 'dark', 'compact'],
     'typography.fontFamily': ['Inter', 'Manrope', 'Public Sans'],
     'typography.baseFontSize': ['sm', 'md', 'lg'],
-    'layout.density': ['compact', 'comfortable', 'spacious'],
+    'layout.density': ['compact', 'comfortable'],
     'layout.contentWidth': ['boxed', 'full'],
     'motion.speed': ['fast', 'normal'],
   };
+
   for (const group of Object.keys(config)) {
     if (!object(saved[group])) continue;
     const target = (config as unknown as Record<string, JsonObject>)[group];
+
     for (const [key, value] of Object.entries(saved[group])) {
-      if (!(key in target) || group === 'brand') continue; // Identity always comes from the project config.
+      if (!(key in target) || group === 'brand') continue;
       const path = `${group}.${key}`;
+
       if (allowed[path]) {
         if (typeof value === 'string' && allowed[path].includes(value)) target[key] = value;
       } else if (group === 'theme' && key.endsWith('Color')) {
@@ -43,9 +51,14 @@ export function resolveConfig(saved: unknown): TemplateConfig {
               category
             ] as boolean;
         }
-      } else if (typeof target[key] === 'boolean' && typeof value === 'boolean')
+      } else if (typeof target[key] === 'boolean' && typeof value === 'boolean') {
         target[key] = value;
+      }
     }
   }
+
+  // v1 exposed a third density tier. Collapse it to the supported comfortable tier.
+  if (object(saved.layout) && saved.layout.density === 'spacious') config.layout.density = 'comfortable';
+
   return config;
 }

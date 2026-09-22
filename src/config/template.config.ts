@@ -6,11 +6,10 @@ export interface TemplateConfig {
     primaryColor: string;
     accentColor: string;
     borderRadius: number;
-    algorithm: 'default' | 'dark' | 'compact';
   };
   typography: { fontFamily: 'Inter' | 'Manrope' | 'Public Sans'; baseFontSize: 'sm' | 'md' | 'lg' };
   layout: {
-    density: 'compact' | 'comfortable' | 'spacious';
+    density: 'compact' | 'comfortable';
     sidebarDefaultCollapsed: boolean;
     contentWidth: 'boxed' | 'full';
   };
@@ -23,6 +22,7 @@ export interface TemplateConfig {
   table: { defaultPageSize: number; hiddenColumns: string[] };
   notifications: { inventory: boolean; finance: boolean; security: boolean };
 }
+
 export const templateConfig: TemplateConfig = {
   brand: { name: 'Aster', logoUrl: '', tagline: 'Your operations, in focus.' },
   theme: {
@@ -30,7 +30,6 @@ export const templateConfig: TemplateConfig = {
     primaryColor: '#6155d9',
     accentColor: '#149b8b',
     borderRadius: 12,
-    algorithm: 'default',
   },
   typography: { fontFamily: 'Inter', baseFontSize: 'md' },
   layout: { density: 'comfortable', sidebarDefaultCollapsed: false, contentWidth: 'full' },
@@ -43,4 +42,5 @@ export const templateConfig: TemplateConfig = {
   table: { defaultPageSize: 10, hiddenColumns: [] },
   notifications: { inventory: true, finance: true, security: true },
 };
+
 export const allowedFonts = ['Inter', 'Manrope', 'Public Sans'] as const;

@@ -1,0 +1,43 @@
+/* Tailwind v4 aliases backed by the same runtime token engine as Ant Design and plain CSS. */
+@theme inline {
+  --color-brand: var(--action-primary);
+  --color-brand-hover: var(--action-primary-hover);
+  --color-brand-active: var(--action-primary-active);
+  --color-accent: var(--accent-500);
+  --color-canvas: var(--bg-base);
+  --color-surface: var(--bg-surface);
+  --color-surface-subtle: var(--bg-subtle);
+  --color-surface-elevated: var(--bg-elevated);
+  --color-selected: var(--bg-selected);
+  --color-ink: var(--text-primary);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-success: var(--semantic-success);
+  --color-warning: var(--semantic-warning);
+  --color-danger: var(--semantic-danger);
+  --color-info: var(--semantic-info);
+
+  --spacing-app-1: var(--space-1);
+  --spacing-app-2: var(--space-2);
+  --spacing-app-3: var(--space-3);
+  --spacing-app-4: var(--space-4);
+  --spacing-app-5: var(--space-5);
+  --spacing-app-6: var(--space-6);
+  --spacing-app-8: var(--space-8);
+  --spacing-app-12: var(--space-12);
+
+  --radius-app-sm: var(--radius-sm);
+  --radius-app-md: var(--radius-md);
+  --radius-app-lg: var(--radius-lg);
+  --radius-app-card: var(--radius-card);
+  --radius-app-overlay: var(--radius-overlay);
+
+  --shadow-app-xs: var(--elevation-xs);
+  --shadow-app-sm: var(--elevation-sm);
+  --shadow-app-md: var(--elevation-md);
+  --shadow-app-lg: var(--elevation-lg);
+
+  --font-sans: var(--font-family);
+}
