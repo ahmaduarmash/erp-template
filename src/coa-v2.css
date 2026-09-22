@@ -1,0 +1,462 @@
+.coa-workspace {
+  display: grid;
+  grid-template-columns: minmax(310px, .92fr) minmax(0, 1.85fr);
+  gap: var(--space);
+}
+
+.coa-browser,
+.coa-detail {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.coa-browser {
+  padding: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 5%, var(--surface)), var(--surface) 150px);
+}
+
+.coa-browser-head,
+.coa-detail-head,
+.coa-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.coa-browser-head {
+  margin-bottom: 14px;
+}
+
+.coa-browser-head h2,
+.coa-section-head h3 {
+  margin: 2px 0 0;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+
+.coa-eyebrow {
+  color: var(--color-primary);
+  font-size: 10.5px;
+  font-weight: 760;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.coa-search {
+  margin-bottom: 14px;
+}
+
+.coa-browser .ant-tree {
+  background: transparent;
+}
+
+.coa-browser .ant-tree-treenode {
+  width: 100%;
+  padding-block: 2px;
+}
+
+.coa-browser .ant-tree-node-content-wrapper {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  padding: 4px 8px !important;
+  border-radius: 9px;
+  transition: background-color 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.coa-browser .ant-tree-node-content-wrapper:hover {
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--surface));
+}
+
+.coa-browser .ant-tree-node-content-wrapper.ant-tree-node-selected {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--surface));
+  box-shadow: inset 3px 0 var(--color-primary), 0 1px 2px rgba(15,23,42,.03);
+}
+
+.coa-tree-group,
+.coa-tree-account {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: 100%;
+}
+
+.coa-tree-group {
+  gap: 7px;
+}
+
+.coa-tree-group-icon,
+.coa-type-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 25px;
+  height: 25px;
+  border-radius: 7px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--surface));
+}
+
+.coa-tree-group strong {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 680;
+}
+
+.coa-tree-group > span:last-child {
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.coa-tree-account {
+  gap: 8px;
+}
+
+.coa-tree-code {
+  flex: 0 0 48px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.coa-tree-name {
+  overflow: hidden;
+  flex: 1;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coa-tree-account .ant-tag {
+  margin: 0;
+  padding-inline: 6px;
+  border-radius: 999px;
+  font-size: 9.5px;
+}
+
+.coa-list {
+  display: grid;
+  gap: 5px;
+}
+
+.coa-list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.coa-list-row:hover {
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--surface));
+  transform: translateX(1px);
+}
+
+.coa-list-row.selected {
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--line));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--surface));
+}
+
+.coa-list-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.coa-list-main strong,
+.coa-list-main small {
+  display: block;
+}
+
+.coa-list-main strong {
+  overflow: hidden;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coa-list-main small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.coa-detail {
+  position: relative;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 250px),
+    var(--surface);
+}
+
+.coa-detail-head {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 17px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+}
+
+.coa-account-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  min-width: 0;
+}
+
+.coa-account-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--line));
+  border-radius: 12px;
+  color: var(--color-primary);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 12%, var(--surface)), var(--surface));
+  box-shadow: var(--erp-shadow-sm);
+  font-size: 18px;
+}
+
+.coa-account-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 580;
+}
+
+.coa-account-identity h2 {
+  margin: 3px 0 2px;
+  font-size: 1.45rem;
+  font-weight: 730;
+  letter-spacing: -.04em;
+}
+
+.coa-account-identity p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coa-command-bar {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0 18px;
+}
+
+.coa-command-bar .ant-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 9px;
+}
+
+.coa-balance-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 19px;
+  margin-bottom: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--line));
+  border-radius: calc(var(--radius-base) + 1px);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 9%, var(--surface)), color-mix(in srgb, var(--color-accent) 4%, var(--surface)));
+  box-shadow: var(--erp-shadow-sm);
+}
+
+.coa-balance-card span,
+.coa-balance-card small,
+.coa-info-card span,
+.coa-info-card small {
+  display: block;
+}
+
+.coa-balance-card span,
+.coa-info-card span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 620;
+}
+
+.coa-balance-card strong {
+  display: block;
+  margin: 4px 0 1px;
+  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+  letter-spacing: -.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.coa-balance-card small,
+.coa-info-card small {
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.coa-balance-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--surface));
+  font-size: 20px;
+}
+
+.coa-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.coa-info-card {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--canvas) 52%, var(--surface));
+}
+
+.coa-info-card strong {
+  display: block;
+  margin: 4px 0 2px;
+  overflow: hidden;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coa-section {
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+}
+
+.coa-section-head {
+  margin-bottom: 13px;
+}
+
+.coa-section .ant-descriptions-item-label {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 620;
+}
+
+.coa-section .ant-descriptions-item-content {
+  font-size: 12.5px;
+  font-weight: 580;
+}
+
+.coa-empty {
+  min-height: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.coa-empty > .anticon {
+  margin-bottom: 6px;
+  color: color-mix(in srgb, var(--color-primary) 55%, var(--muted));
+  font-size: 32px;
+}
+
+.form-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 13%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--surface));
+}
+
+.form-intro-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--surface));
+}
+
+.form-intro h3 {
+  margin: 0 0 3px;
+  font-size: 13.5px;
+}
+
+.form-intro p {
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.form-switch-list {
+  overflow: hidden;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.form-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 74%, transparent);
+}
+
+.form-switch-row:last-child {
+  border-bottom: 0;
+}
+
+.form-switch-row strong,
+.form-switch-row span {
+  display: block;
+}
+
+.form-switch-row strong {
+  font-size: 12.5px;
+}
+
+.form-switch-row span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+@media (max-width: 1020px) {
+  .coa-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .coa-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .coa-browser-head,
+  .coa-detail-head {
+    flex-direction: column;
+  }
+}
