@@ -15,9 +15,25 @@ import {
   type TableColumnsType,
 } from 'antd';
 import {
+  AuditOutlined,
   CheckCircleOutlined,
+  CloseCircleOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  DollarOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FileDoneOutlined,
+  FileTextOutlined,
   MoreOutlined,
+  PrinterOutlined,
+  ReloadOutlined,
   SearchOutlined,
+  SendOutlined,
+  StopOutlined,
+  SwapOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons';
 import type { RecordData } from '../../data/modules';
 
@@ -27,7 +43,26 @@ export type RowAction = {
   onClick: () => void;
   danger?: boolean;
   disabled?: boolean;
+  icon?: ReactNode;
 };
+
+function actionIcon(key: string): ReactNode {
+  const normalized = key.toLowerCase();
+  if (normalized.includes('edit')) return <EditOutlined />;
+  if (normalized.includes('delete') || normalized.includes('remove')) return <DeleteOutlined />;
+  if (normalized.includes('duplicate') || normalized.includes('copy')) return <CopyOutlined />;
+  if (normalized.includes('print') || normalized.includes('pdf')) return <PrinterOutlined />;
+  if (normalized.includes('send') || normalized.includes('invite')) return <SendOutlined />;
+  if (normalized.includes('ledger') || normalized.includes('history') || normalized.includes('audit')) return <AuditOutlined />;
+  if (normalized.includes('transfer')) return <SwapOutlined />;
+  if (normalized.includes('payment') || normalized.includes('pay')) return <DollarOutlined />;
+  if (normalized.includes('post') || normalized.includes('approve') || normalized.includes('receive')) return <FileDoneOutlined />;
+  if (normalized.includes('reverse') || normalized.includes('reset')) return <ReloadOutlined />;
+  if (normalized.includes('cancel') || normalized.includes('archive') || normalized.includes('suspend')) return <StopOutlined />;
+  if (normalized.includes('view') || normalized.includes('open')) return <EyeOutlined />;
+  if (normalized.includes('download') || normalized.includes('export')) return <DownloadOutlined />;
+  return <FileTextOutlined />;
+}
 
 export function formatMoney(value: number | string, currency = 'USD') {
   return new Intl.NumberFormat('en-US', {
@@ -64,6 +99,7 @@ export function EntityCell({
 const successStatuses = new Set(['Active', 'Paid', 'Completed', 'Received', 'Approved', 'Posted', 'In stock', 'Available']);
 const warningStatuses = new Set(['Draft', 'Pending', 'Partly Paid', 'Low stock', 'In transit', 'Invited', 'Reviewed']);
 const dangerStatuses = new Set(['Overdue', 'Failed', 'Rejected', 'Cancelled', 'Out of stock', 'Suspended']);
+const infoStatuses = new Set(['Sent', 'Submitted', 'Unpaid']);
 
 export function SemanticStatus({ value }: { value: string }) {
   const color = successStatuses.has(value)
@@ -72,9 +108,11 @@ export function SemanticStatus({ value }: { value: string }) {
       ? 'warning'
       : dangerStatuses.has(value)
         ? 'error'
-        : 'default';
+        : infoStatuses.has(value)
+          ? 'processing'
+          : 'default';
   return (
-    <Tag bordered={false} color={color}>
+    <Tag className="erp-status" bordered={false} color={color}>
       <span className="status-dot" /> {value}
     </Tag>
   );
@@ -84,27 +122,41 @@ export function ActionMenu({
   primary,
   overflow,
 }: {
-  primary?: { label: string; onClick: () => void };
+  primary?: { label: string; onClick: () => void; icon?: ReactNode };
   overflow: RowAction[];
 }) {
   const items: MenuProps['items'] = overflow.map((action) => ({
     key: action.key,
     label: action.label,
+    icon: action.icon ?? actionIcon(action.key),
     danger: action.danger,
     disabled: action.disabled,
     onClick: action.onClick,
   }));
   return (
-    <Space size={4}>
+    <Space size={3}>
       {primary ? (
-        <Button size="small" type="link" onClick={primary.onClick}>
-          {primary.label}
-        </Button>
+        <Tooltip title={primary.label} mouseEnterDelay={0.35}>
+          <Button
+            className="erp-row-action erp-row-action-primary"
+            size="small"
+            type="text"
+            aria-label={primary.label}
+            icon={primary.icon ?? <EyeOutlined />}
+            onClick={primary.onClick}
+          />
+        </Tooltip>
       ) : null}
       {overflow.length ? (
-        <Dropdown menu={{ items }} trigger={['click']}>
-          <Tooltip title="More actions">
-            <Button size="small" type="text" aria-label="More actions" icon={<MoreOutlined />} />
+        <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+          <Tooltip title="More actions" mouseEnterDelay={0.35}>
+            <Button
+              className="erp-row-action erp-row-action-more"
+              size="small"
+              type="text"
+              aria-label="More actions"
+              icon={<MoreOutlined />}
+            />
           </Tooltip>
         </Dropdown>
       ) : null}
@@ -160,7 +212,7 @@ export function DomainTable({
               key: 'erp-actions',
               title: '',
               fixed: 'right',
-              width: 132,
+              width: 82,
               align: 'right',
               render: (_, row) => rowActions(row),
             },
@@ -245,3 +297,14 @@ export function DocumentSummary({
     </div>
   );
 }
+
+export function EmptyActionState({ message }: { message: string }) {
+  return (
+    <div className="erp-empty-inline">
+      <CloseCircleOutlined />
+      <span>{message}</span>
+    </div>
+  );
+}
+
+export const ListIcon = UnorderedListOutlined;
