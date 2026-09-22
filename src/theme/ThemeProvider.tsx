@@ -98,13 +98,38 @@ export function ThemeProvider({ children, userId }: { children: ReactNode; userI
         borderRadius: config.theme.borderRadius,
         fontFamily: `'${config.typography.fontFamily} Variable', sans-serif`,
         fontSize: { sm: 14, md: 15, lg: 16 }[config.typography.baseFontSize],
-        motion: false,
+        motion: config.motion.enabled,
+        motionDurationFast: '0.12s',
+        motionDurationMid: '0.2s',
+        motionDurationSlow: '0.3s',
+        boxShadowSecondary: '0 16px 40px rgba(15, 23, 42, 0.12)',
       },
       components: {
         Table: {
-          cellPaddingBlock: { compact: 8, comfortable: 13, spacious: 18 }[config.layout.density],
+          cellPaddingBlock: { compact: 8, comfortable: 12, spacious: 17 }[config.layout.density],
+          headerBg: dark ? '#16181d' : '#f7f8fb',
+          headerColor: dark ? 'rgba(255,255,255,.62)' : '#697386',
+          rowHoverBg: dark ? 'rgba(97,85,217,.10)' : 'rgba(97,85,217,.045)',
         },
-        Button: { primaryShadow: 'none' },
+        Button: {
+          primaryShadow: '0 7px 18px rgba(97, 85, 217, .18)',
+          defaultShadow: 'none',
+          fontWeight: 590,
+        },
+        Modal: {
+          borderRadiusLG: config.theme.borderRadius + 4,
+          paddingContentHorizontalLG: 24,
+        },
+        Drawer: {
+          paddingLG: 22,
+        },
+        Dropdown: {
+          borderRadiusLG: Math.max(10, config.theme.borderRadius),
+        },
+        Tabs: {
+          inkBarColor: config.theme.primaryColor,
+          itemSelectedColor: config.theme.primaryColor,
+        },
       },
     }),
     [config, dark],
