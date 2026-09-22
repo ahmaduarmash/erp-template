@@ -1,5 +1,5 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type Key } from 'react';
-import { Button, Dropdown, Input, Space, Table, Tag, Tooltip, type TableColumnsType } from 'antd';
+import { memo, useCallback, useEffect, useMemo, useState, type Key } from 'react';
+import { Button, Input, Space, Table, Tag, Tooltip, type TableColumnsType } from 'antd';
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -11,11 +11,13 @@ import {
 import { ConfirmPopover } from './ConfirmPopover';
 import { EmptyState, PageSkeleton } from '../feedback';
 import { useTemplate } from '../../theme/ThemeProvider';
-import { useMotionPolicy } from '../../lib/motion';
+import { AnimatedDropdown } from '../../lib/motion/overlays';
 import { downloadCsv } from '../../lib/csv';
 import type { RecordData } from '../../data/modules';
+
 const danger = ['Overdue', 'Failed', 'Suspended', 'Rejected', 'Out of stock'];
 const success = ['Active', 'Paid', 'Completed', 'Received', 'Approved', 'In stock', 'Success'];
+
 export const StatusBadge = memo(function StatusBadge({ status }: { status: string }) {
   return (
     <Tag
@@ -27,6 +29,7 @@ export const StatusBadge = memo(function StatusBadge({ status }: { status: strin
     </Tag>
   );
 });
+
 export interface DataTableProps {
   rows: RecordData[];
   columns: TableColumnsType<RecordData>;
@@ -37,7 +40,9 @@ export interface DataTableProps {
   loading?: boolean;
   searchPlaceholder?: string;
 }
+
 const rowKey = (row: RecordData) => row.id;
+
 export const DataTable = memo(function DataTable({
   rows,
   columns,
@@ -49,26 +54,27 @@ export const DataTable = memo(function DataTable({
   searchPlaceholder = 'Search records…',
 }: DataTableProps) {
   const { config } = useTemplate();
-  const { enabled, duration } = useMotionPolicy();
-  const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<Key[]>([]);
   const [hidden, setHidden] = useState<string[]>(config.table.hiddenColumns);
   const [pageSize, setPageSize] = useState(config.table.defaultPageSize);
   const [page, setPage] = useState(1);
   const [filteredRows, setFilteredRows] = useState<RecordData[] | null>(null);
+
   useEffect(() => setPageSize(config.table.defaultPageSize), [config.table.defaultPageSize]);
   useEffect(() => setHidden(config.table.hiddenColumns), [config.table.hiddenColumns]);
   useEffect(() => {
     setSelected([]);
     setFilteredRows(null);
   }, [rows]);
+
   const searched = useMemo(() => {
     const term = query.trim().toLowerCase();
     return term
       ? rows.filter((row) => Object.values(row).some((v) => String(v).toLowerCase().includes(term)))
       : rows;
   }, [rows, query]);
+
   const actions = useMemo<TableColumnsType<RecordData>>(
     () =>
       onView || onEdit || onDelete
@@ -120,6 +126,7 @@ export const DataTable = memo(function DataTable({
         : [],
     [onEdit, onDelete, onView],
   );
+
   const visible = useMemo(
     () => [...columns.filter((c) => !hidden.includes(String(c.key))), ...actions],
     [columns, hidden, actions],
@@ -145,6 +152,7 @@ export const DataTable = memo(function DataTable({
     setPageSize(p.pageSize || 10);
     setFilteredRows(extra.currentDataSource);
   }, []);
+
   const exportRows = () => {
     const source = filteredRows || searched;
     const data = selected.length ? source.filter((r) => selected.includes(r.id)) : source;
@@ -155,33 +163,16 @@ export const DataTable = memo(function DataTable({
       data.map((row) => exportColumns.map((c) => row[String(c.key)])),
     );
   };
-  useEffect(() => {
-    if (!enabled || searched.length > 200) return;
-    let cancelled = false;
-    let cancel: undefined | (() => void);
-    void import('motion').then(({ animate }) => {
-      if (cancelled || !root.current) return;
-      const targets = Array.from(root.current.querySelectorAll('.ant-table-row')).slice(0, 20);
-      const controls = animate(
-        targets,
-        { opacity: [0, 1], transform: ['translateY(4px)', 'translateY(0px)'] },
-        { duration, delay: (i) => i * 0.012 },
-      );
-      cancel = () => controls.stop();
-    });
-    return () => {
-      cancelled = true;
-      cancel?.();
-    };
-  }, [searched, page, enabled, duration]);
+
   if (loading)
     return (
       <section className="panel">
         <PageSkeleton />
       </section>
     );
+
   return (
-    <section className="panel table-panel" ref={root}>
+    <section className="panel table-panel">
       <div className="table-toolbar">
         <Input
           allowClear
@@ -211,7 +202,7 @@ export const DataTable = memo(function DataTable({
               </Button>
             </ConfirmPopover>
           )}
-          <Dropdown
+          <AnimatedDropdown
             trigger={['click']}
             menu={{
               items: columns.map((c) => ({
@@ -228,7 +219,7 @@ export const DataTable = memo(function DataTable({
             }}
           >
             <Button icon={<SettingOutlined />}>Columns</Button>
-          </Dropdown>
+          </AnimatedDropdown>
           <Button icon={<DownloadOutlined />} onClick={exportRows}>
             Export
           </Button>
