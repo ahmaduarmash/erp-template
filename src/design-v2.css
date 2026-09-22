@@ -1,0 +1,495 @@
+/* v2 visual system — calm, dense, professional SaaS/ERP styling. */
+:root {
+  --erp-blue: #3b82f6;
+  --erp-green: #16a34a;
+  --erp-amber: #d97706;
+  --erp-red: #dc2626;
+  --erp-violet: var(--color-primary);
+  --erp-teal: var(--color-accent);
+  --erp-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --erp-shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.05);
+  --erp-shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.18), 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+body {
+  background:
+    radial-gradient(circle at 88% -10%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 30rem),
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--color-accent) 5%, transparent), transparent 24rem),
+    var(--canvas);
+}
+
+/* Shell hierarchy */
+.sidebar,
+.topbar,
+.page-tabs {
+  backdrop-filter: saturate(125%) blur(14px);
+}
+.sidebar {
+  box-shadow: 1px 0 0 color-mix(in srgb, var(--line) 85%, transparent);
+}
+.topbar {
+  border-bottom-color: color-mix(in srgb, var(--line) 82%, transparent);
+}
+.page-tabs {
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+.page-tab {
+  border: 1px solid transparent;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.page-tab:hover {
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--surface));
+}
+.page-tab.selected {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--erp-shadow-sm);
+}
+.nav-link {
+  position: relative;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.nav-link:hover {
+  transform: translateX(1px);
+}
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+/* Page heading */
+.page-header {
+  position: relative;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+}
+.page-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 56px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+}
+.page-header .ant-breadcrumb {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.page-header h1 {
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  font-weight: 720;
+  letter-spacing: -0.045em;
+}
+.page-header p {
+  max-width: 760px;
+  margin-top: 5px;
+  font-size: 13px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Surfaces */
+.panel {
+  border-color: color-mix(in srgb, var(--line) 86%, transparent);
+  box-shadow: var(--erp-shadow-sm);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.erp-table-panel,
+.table-panel,
+.erp-tree-panel,
+.erp-detail-panel,
+.erp-security-panel {
+  background: color-mix(in srgb, var(--surface) 98%, var(--color-primary) 2%);
+}
+.erp-tree-panel,
+.erp-detail-panel {
+  position: relative;
+  overflow: hidden;
+}
+.erp-detail-panel::after {
+  content: '';
+  position: absolute;
+  right: -100px;
+  top: -100px;
+  width: 220px;
+  height: 220px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 68%);
+}
+
+/* Buttons: tactile without being decorative */
+.ant-btn {
+  font-weight: 590;
+  transition: transform 110ms ease, box-shadow 140ms ease, background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+.ant-btn:not(:disabled):active {
+  transform: scale(0.985);
+}
+.ant-btn-primary {
+  border-color: color-mix(in srgb, var(--color-primary) 88%, #000 12%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 88%, #fff 12%), var(--color-primary));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 18%, transparent), inset 0 1px rgba(255,255,255,.16);
+}
+.ant-btn-primary:not(:disabled):hover {
+  box-shadow: 0 9px 22px color-mix(in srgb, var(--color-primary) 24%, transparent), inset 0 1px rgba(255,255,255,.18);
+  transform: translateY(-1px);
+}
+
+/* Inputs */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker {
+  transition: border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease !important;
+}
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-input-number:hover,
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector,
+.ant-picker:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 42%, var(--line)) !important;
+}
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-input-number-focused,
+.ant-select-focused .ant-select-selector,
+.ant-picker-focused {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent) !important;
+}
+.ant-form-item-label > label {
+  font-size: 12.5px;
+  font-weight: 620;
+  color: color-mix(in srgb, var(--text) 84%, var(--muted));
+}
+
+/* Tables */
+.erp-table-toolbar,
+.table-toolbar {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 97%, var(--color-primary) 3%), var(--surface));
+}
+.ant-table-wrapper .ant-table {
+  background: transparent;
+}
+.ant-table-wrapper .ant-table-thead > tr > th {
+  border-bottom-color: color-mix(in srgb, var(--line) 90%, transparent);
+  background: color-mix(in srgb, var(--canvas) 72%, var(--surface));
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 680;
+  letter-spacing: .025em;
+  text-transform: uppercase;
+}
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom-color: color-mix(in srgb, var(--line) 72%, transparent);
+}
+.ant-table-wrapper .ant-table-tbody > tr {
+  transition: background-color 100ms ease;
+}
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--surface)) !important;
+}
+.ant-table-wrapper .ant-table-cell-fix-right {
+  background: color-mix(in srgb, var(--surface) 98%, var(--color-primary) 2%);
+}
+.erp-entity-cell strong {
+  font-weight: 640;
+}
+.erp-entity-cell .ant-avatar {
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--surface));
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--line));
+}
+
+/* Row actions: icons first, text only in overflow menus */
+.erp-row-action.ant-btn,
+.table-panel .ant-table-cell .ant-btn-text {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 8px;
+  color: var(--muted);
+}
+.erp-row-action.ant-btn:hover,
+.table-panel .ant-table-cell .ant-btn-text:hover {
+  color: var(--color-primary) !important;
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--surface)) !important;
+}
+.erp-row-action-primary.ant-btn {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--surface));
+}
+.erp-row-action-more.ant-btn:hover {
+  color: var(--text) !important;
+  background: color-mix(in srgb, var(--text) 6%, transparent) !important;
+}
+.ant-dropdown .ant-dropdown-menu {
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: 12px;
+  box-shadow: var(--erp-shadow-md);
+}
+.ant-dropdown .ant-dropdown-menu-item {
+  min-height: 34px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.ant-dropdown .ant-dropdown-menu-item-icon {
+  color: var(--muted);
+}
+
+/* Statuses */
+.erp-status.ant-tag,
+.ant-tag:has(.status-dot) {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline: 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: .9;
+}
+
+/* KPI strip — controlled semantic color, never rainbow */
+.erp-kpi {
+  --kpi-accent: var(--color-primary);
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--kpi-accent) 14%, var(--line));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--kpi-accent) 6%, var(--surface)) 0%, var(--surface) 64%);
+  box-shadow: var(--erp-shadow-sm), inset 0 2px 0 color-mix(in srgb, var(--kpi-accent) 58%, transparent);
+}
+.erp-kpi:nth-child(2) { --kpi-accent: var(--color-accent); }
+.erp-kpi:nth-child(3) { --kpi-accent: var(--erp-blue); }
+.erp-kpi:nth-child(4) { --kpi-accent: var(--erp-amber); }
+.erp-kpi > strong {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+.erp-kpi > span {
+  font-weight: 620;
+}
+
+/* Segmented quick filters */
+.erp-quick-views .ant-segmented {
+  padding: 3px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--canvas) 78%, var(--surface));
+  box-shadow: inset 0 1px 2px rgba(15,23,42,.03);
+}
+.erp-quick-views .ant-segmented-item-selected {
+  color: var(--color-primary);
+  box-shadow: var(--erp-shadow-sm);
+}
+
+/* Tree / COA / warehouse workspaces */
+.erp-tree-panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, var(--surface)), var(--surface) 130px);
+}
+.erp-tree-panel .widget-heading {
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+}
+.erp-tree-panel .ant-tree {
+  font-size: 13px;
+}
+.erp-tree-panel .ant-tree-treenode {
+  width: 100%;
+  padding-block: 2px;
+}
+.erp-tree-panel .ant-tree-node-content-wrapper {
+  flex: 1;
+  min-width: 0;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  transition: background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+.erp-tree-panel .ant-tree-node-content-wrapper:hover {
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--surface));
+}
+.erp-tree-panel .ant-tree-node-content-wrapper.ant-tree-node-selected {
+  color: var(--color-primary);
+  font-weight: 630;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--surface));
+  box-shadow: inset 3px 0 var(--color-primary);
+}
+.erp-tree-panel .ant-tree-switcher {
+  color: var(--muted);
+}
+.erp-detail-panel .erp-object-heading {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+}
+.erp-object-heading h2 {
+  font-size: 1.35rem;
+  letter-spacing: -.03em;
+}
+.erp-detail-panel .ant-descriptions {
+  position: relative;
+  z-index: 1;
+}
+.erp-detail-panel .ant-descriptions-item-label {
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.erp-detail-panel .ant-descriptions-item-content {
+  font-weight: 560;
+}
+
+/* Workflows */
+.erp-workflow-step {
+  min-height: 44px;
+  border-color: color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--canvas) 68%, var(--surface));
+}
+.erp-workflow-step.done {
+  color: var(--color-primary);
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--line));
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--surface));
+}
+.erp-workflow-step.current {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 8%, transparent), inset 0 0 0 1px var(--color-primary);
+}
+
+/* Tabs */
+.ant-tabs .ant-tabs-tab {
+  font-weight: 560;
+}
+.ant-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  font-weight: 650;
+}
+.ant-tabs .ant-tabs-ink-bar {
+  height: 2px !important;
+  border-radius: 2px;
+}
+
+/* Modal and drawer treatment. Ant motion is enabled in ThemeProvider. */
+.ant-modal-root .ant-modal-mask,
+.ant-drawer .ant-drawer-mask {
+  backdrop-filter: blur(5px) saturate(105%);
+}
+.ant-modal .ant-modal-content {
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: calc(var(--radius-base) + 4px);
+  box-shadow: var(--erp-shadow-lg);
+}
+.ant-modal .ant-modal-header {
+  margin: 0;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, var(--surface)), var(--surface));
+}
+.ant-modal .ant-modal-title,
+.ant-drawer .ant-drawer-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+.ant-modal .ant-modal-body {
+  padding: 22px 24px 8px;
+}
+.ant-modal .ant-modal-footer {
+  margin: 16px 0 0;
+  padding: 14px 24px 16px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  background: color-mix(in srgb, var(--canvas) 62%, var(--surface));
+}
+.ant-modal .ant-modal-close,
+.ant-drawer .ant-drawer-close {
+  border-radius: 8px;
+}
+.ant-modal .ant-modal-close:hover,
+.ant-drawer .ant-drawer-close:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+.ant-drawer .ant-drawer-content-wrapper {
+  box-shadow: -24px 0 70px rgba(15, 23, 42, .16), -4px 0 18px rgba(15, 23, 42, .06);
+}
+.ant-drawer .ant-drawer-content {
+  border-left: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+}
+.ant-drawer .ant-drawer-header {
+  padding: 18px 22px;
+  border-bottom-color: color-mix(in srgb, var(--line) 78%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, var(--surface)), var(--surface));
+}
+.ant-drawer .ant-drawer-body {
+  padding: 22px;
+}
+.ant-drawer .ant-drawer-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 22px 16px;
+  border-top-color: color-mix(in srgb, var(--line) 78%, transparent);
+  background: color-mix(in srgb, var(--canvas) 62%, var(--surface));
+}
+
+/* Feedback */
+.ant-message-notice-content,
+.ant-notification-notice {
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  box-shadow: var(--erp-shadow-md) !important;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .header-actions {
+    width: 100%;
+  }
+  .header-actions > .ant-btn,
+  .header-actions > .ant-space {
+    max-width: 100%;
+  }
+  .ant-modal {
+    max-width: calc(100vw - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
