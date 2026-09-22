@@ -76,6 +76,24 @@ test('Runtime tokens derive semantic light/dark, density, radius, type and layou
   assert.notEqual(light.elevation.md, dark.elevation.md);
 });
 
+test('Motion matrix is fast, interaction-specific, and exits faster than entry', () => {
+  const normal = resolveDesignTokens(templateConfig, false).motion;
+  const fast = resolveDesignTokens(
+    { ...templateConfig, motion: { ...templateConfig.motion, speed: 'fast' } },
+    false,
+  ).motion;
+  assert.equal(normal.modalEnter, 0.2);
+  assert.equal(normal.modalExit, 0.14);
+  assert.equal(normal.drawerEnter, 0.2);
+  assert.equal(normal.drawerExit, 0.14);
+  assert.ok(normal.modalExit < normal.modalEnter);
+  assert.ok(normal.drawerExit < normal.drawerEnter);
+  assert.ok(fast.micro < normal.micro);
+  assert.ok(fast.standard < normal.standard);
+  assert.ok(fast.page < normal.page);
+  assert.deepEqual(normal.spring, { stiffness: 500, damping: 35 });
+});
+
 test('Runtime CSS contains no decorative gradients or raw hex theme colors', () => {
   const cssFiles = [
     'src/styles.css',
@@ -84,12 +102,21 @@ test('Runtime CSS contains no decorative gradients or raw hex theme colors', () 
     'src/coa-v2.css',
     'src/journal-v2.css',
     'src/theme/tokens/tailwind.css',
+    'src/theme/motion.css',
   ];
   for (const file of cssFiles) {
     const css = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
     assert.equal(/\b(?:linear|radial|conic)-gradient\s*\(/i.test(css), false, `${file} contains a decorative gradient`);
     assert.equal(/#[\da-f]{3,8}\b/i.test(css), false, `${file} contains a raw hex theme color`);
   }
+});
+
+test('Runtime motion CSS is controlled by token variables and reduced-motion vetoes animation', () => {
+  const css = readFileSync(new URL('../src/theme/motion.css', import.meta.url), 'utf8');
+  assert.match(css, /var\(--motion-micro\)/);
+  assert.match(css, /var\(--motion-standard\)/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  assert.match(css, /data-motion='off'/);
 });
 
 test('Every module has unique seed IDs, valid statuses and required fields', () => {
