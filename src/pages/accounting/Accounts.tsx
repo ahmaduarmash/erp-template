@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Accounts() {
-  return <ModulePage moduleKey="chart-of-accounts" />;
-}
+import { AccountsWorkspace } from '../erp/AccountingWorkspaces';
+export default AccountsWorkspace;
