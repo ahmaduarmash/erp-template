@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import {
-  ArrowDownOutlined,
   ArrowRightOutlined,
   ArrowUpOutlined,
   CalendarOutlined,
@@ -24,41 +23,43 @@ export default function Dashboard() {
     currency: workspace.org.currency,
     maximumFractionDigits: 0,
   });
-  const total = workspace.records['sales-invoices'].reduce((sum, r) => sum + Number(r.amount), 0);
+  const invoices = workspace.records['sales-invoices'];
+  const purchaseOrders = workspace.records['purchase-orders'];
+  const stock = workspace.records['stock-levels'];
+  const expenses = workspace.records.expenses;
+  const receivables = invoices
+    .filter((row) => row.status !== 'Paid')
+    .reduce((sum, row) => sum + Number(row.amount), 0);
   const metrics = [
     {
-      label: 'Total invoiced',
-      value: currency.format(total),
-      delta: '+14.2%',
-      detail: 'vs. previous period',
+      label: 'Open receivables',
+      value: currency.format(receivables),
+      delta: `${invoices.filter((row) => row.status === 'Overdue').length} overdue`,
+      detail: 'customer balances to collect',
       icon: <DollarOutlined />,
       accent: 'primary',
     },
     {
-      label: 'Products in catalog',
-      value: String(workspace.records.products.length),
-      delta: '+8.1%',
-      detail: 'across all categories',
+      label: 'Purchase orders open',
+      value: String(purchaseOrders.filter((row) => !['Received', 'Cancelled'].includes(String(row.status))).length),
+      delta: `${purchaseOrders.filter((row) => row.status === 'Ordered').length} awaiting receipt`,
+      detail: 'purchasing commitments',
       icon: <ShoppingOutlined />,
       accent: 'accent',
     },
     {
-      label: 'Active customers',
-      value: String(workspace.records.customers.filter((r) => r.status === 'Active').length),
-      delta: '+6.4%',
-      detail: 'customer accounts',
+      label: 'Pending approvals',
+      value: String(expenses.filter((row) => row.status === 'Pending').length),
+      delta: 'Expense queue',
+      detail: 'requires finance action',
       icon: <TeamOutlined />,
       accent: 'primary',
     },
     {
       label: 'Low-stock items',
-      value: String(
-        workspace.records['stock-levels'].filter(
-          (r) => Number(r.quantity) <= Number(r.reorder) || r.status === 'Low stock',
-        ).length,
-      ),
+      value: String(stock.filter((row) => Number(row.quantity) <= Number(row.reorder) || row.status === 'Low stock').length),
       delta: 'Needs review',
-      detail: 'check reorder points',
+      detail: 'check replenishment',
       icon: <WarningOutlined />,
       accent: 'warning',
     },
@@ -67,7 +68,7 @@ export default function Dashboard() {
     <MotionSurface page>
       <PageHeader
         title="Workspace overview"
-        description={`Welcome back, ${workspace.profile.name.split(' ')[0]}. Here’s where things stand.`}
+        description={`Welcome back, ${workspace.profile.name.split(' ')[0]}. Here are the operational queues that need attention.`}
         action={
           <>
             <span className="date-pill">
@@ -88,8 +89,8 @@ export default function Dashboard() {
         }
       />
       <div className="overview-label">
-        <span>AT A GLANCE</span>
-        <span>Sample trends · Live local totals</span>
+        <span>OPERATIONS AT A GLANCE</span>
+        <span>Financial · purchasing · approvals · inventory</span>
       </div>
       <div className="kpi-grid">
         {metrics.map((m, i) => (
@@ -103,11 +104,7 @@ export default function Dashboard() {
                 {m.value}
                 <svg className="sparkline" viewBox="0 0 90 32" aria-hidden="true">
                   <polyline
-                    points={
-                      i === 3
-                        ? '0,8 15,15 28,10 42,23 55,15 72,25 90,22'
-                        : '0,27 13,21 24,25 39,12 51,17 64,6 75,10 90,2'
-                    }
+                    points={i === 3 ? '0,8 15,15 28,10 42,23 55,15 72,25 90,22' : '0,27 13,21 24,25 39,12 51,17 64,6 75,10 90,2'}
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
@@ -116,7 +113,7 @@ export default function Dashboard() {
               </div>
               <div className="stat-bottom">
                 <span className={i === 3 ? 'trend-warning' : 'trend-positive'}>
-                  {i === 3 ? <ArrowDownOutlined /> : <ArrowUpOutlined />} {m.delta}
+                  <ArrowUpOutlined /> {m.delta}
                 </span>
                 <span>{m.detail}</span>
               </div>
@@ -124,14 +121,7 @@ export default function Dashboard() {
           </MotionSurface>
         ))}
       </div>
-      <Suspense
-        fallback={
-          <div className="panel p-6">
-            <Skeleton active />
-            <Skeleton active />
-          </div>
-        }
-      >
+      <Suspense fallback={<div className="panel p-6"><Skeleton active /><Skeleton active /></div>}>
         <Charts />
       </Suspense>
       <section className="panel activity-panel">
@@ -147,20 +137,13 @@ export default function Dashboard() {
         {workspace.activity.slice(0, 4).map((a, i) => (
           <div className="activity-row" key={a.id}>
             <Avatar className={i % 2 ? 'avatar accent-avatar' : 'avatar'}>
-              {a.name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
+              {a.name.split(' ').map((n) => n[0]).join('')}
             </Avatar>
             <div>
               <strong>{a.action}</strong>
-              <p>
-                {a.name} <span>·</span> {a.module}
-              </p>
+              <p>{a.name} <span>·</span> {a.module}</p>
             </div>
-            <time>
-              {new Date(a.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </time>
+            <time>{new Date(a.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
           </div>
         ))}
       </section>
