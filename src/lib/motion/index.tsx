@@ -1,20 +1,45 @@
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { useTemplate } from '../../theme/ThemeProvider';
+
 const Animated = lazy(() => import('./surface'));
-/** Delegated, lazy-loaded button micro-interactions; no per-cell listeners. */
+
+export function useMotionTokens() {
+  const { tokens, motionEnabled, reducedMotion } = useTemplate();
+  return {
+    enabled: motionEnabled,
+    reduced: reducedMotion,
+    ...tokens.motion,
+  };
+}
+
+/** Backward-compatible bridge while older feature code migrates to interaction-specific tokens. */
+export function useMotionPolicy() {
+  const motion = useMotionTokens();
+  return { enabled: motion.enabled, duration: motion.standard };
+}
+
+/** Delegated, lazy-loaded button press feedback; no per-cell listeners. */
 export function useButtonMotion() {
-  const { enabled, duration } = useMotionPolicy();
+  const motion = useMotionTokens();
   useEffect(() => {
-    if (!enabled) return;
+    if (!motion.enabled) return;
     let disposed = false;
     let removeListeners = () => {};
     const active = new Map<HTMLElement, { stop: () => void }>();
+
     void import('motion')
       .then(({ animate }) => {
         if (disposed) return;
-        const run = (button: HTMLElement, scale: number, opacity: number) => {
+        const run = (button: HTMLElement, scale: number) => {
           active.get(button)?.stop();
-          const control = animate(button, { scale, opacity }, { duration });
+          const control = animate(
+            button,
+            { scale },
+            {
+              duration: motion.micro,
+              ease: scale < 1 ? motion.easingExit : motion.easingEnter,
+            },
+          );
           active.set(button, control);
           void control.then(() => {
             if (active.get(button) === control && scale === 1) active.delete(button);
@@ -22,11 +47,9 @@ export function useButtonMotion() {
         };
         const press = (event: PointerEvent) => {
           const button = (event.target as HTMLElement).closest<HTMLElement>('.ant-btn');
-          if (button && !button.hasAttribute('disabled')) run(button, 0.97, 0.9);
+          if (button && !button.hasAttribute('disabled')) run(button, 0.985);
         };
-        const release = () => {
-          active.forEach((_control, button) => run(button, 1, 1));
-        };
+        const release = () => active.forEach((_control, button) => run(button, 1));
         document.addEventListener('pointerdown', press);
         document.addEventListener('pointerup', release);
         document.addEventListener('pointercancel', release);
@@ -37,35 +60,19 @@ export function useButtonMotion() {
         };
       })
       .catch(() => {});
+
     return () => {
       disposed = true;
       removeListeners();
       active.forEach((control, button) => {
         control.stop();
         button.style.removeProperty('transform');
-        button.style.removeProperty('opacity');
       });
       active.clear();
     };
-  }, [enabled, duration]);
+  }, [motion.enabled, motion.easingEnter, motion.easingExit, motion.micro]);
 }
-export function useMotionPolicy() {
-  const { config } = useTemplate();
-  const [reduced, setReduced] = useState(
-    () => matchMedia('(prefers-reduced-motion: reduce)').matches,
-  );
-  useEffect(() => {
-    const media = matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(media.matches);
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
-  }, []);
-  // OS preference is always a hard veto, even if a project disables the optional flag.
-  return {
-    enabled: config.motion.enabled && !reduced,
-    duration: config.motion.speed === 'fast' ? 0.16 : 0.22,
-  };
-}
+
 export function MotionSurface({
   children,
   className,
@@ -75,12 +82,19 @@ export function MotionSurface({
   className?: string;
   page?: boolean;
 }) {
-  const policy = useMotionPolicy();
+  const motion = useMotionTokens();
   const plain = <div className={className}>{children}</div>;
-  if (!policy.enabled) return plain;
+  if (!motion.enabled) return plain;
   return (
     <Suspense fallback={plain}>
-      <Animated className={className} page={page} duration={policy.duration}>
+      <Animated
+        className={className}
+        page={page}
+        enterDuration={page ? motion.page : motion.standard}
+        exitDuration={motion.micro}
+        enterEase={motion.easingEnter}
+        exitEase={motion.easingExit}
+      >
         {children}
       </Animated>
     </Suspense>
