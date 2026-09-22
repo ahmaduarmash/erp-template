@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function StockTransfers() {
-  return <ModulePage moduleKey="stock-transfers" />;
-}
+import { StockTransfersWorkspace } from '../erp/InventoryWorkspaces';
+export default StockTransfersWorkspace;
