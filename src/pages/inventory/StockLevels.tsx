@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function StockLevels() {
-  return <ModulePage moduleKey="stock-levels" />;
-}
+import { StockLevelsWorkspace } from '../erp/InventoryWorkspaces';
+export default StockLevelsWorkspace;
