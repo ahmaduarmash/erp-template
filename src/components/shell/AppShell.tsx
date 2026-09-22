@@ -10,7 +10,9 @@ import { PageSkeleton } from '../feedback';
 import { useSound } from '../../lib/sound/useSound';
 import { useWorkspaceTools } from '../../lib/useWorkspaceTools';
 import { useButtonMotion } from '../../lib/motion';
+import { PageTransition } from '../../lib/motion/transitions';
 import { NotificationReceiver } from '../feedback/NotificationReceiver';
+
 export default function AppShell({ onLogout }: { onLogout: () => void }) {
   useWorkspaceTools();
   useButtonMotion();
@@ -22,6 +24,7 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
   const navigate = useNavigate();
   const [tabs, setTabs] = useState(['/dashboard']);
   const sound = useSound();
+
   useEffect(() => {
     setTabs((t) => (t.includes(location.pathname) ? t : [...t, location.pathname].slice(-8)));
   }, [location.pathname]);
@@ -29,6 +32,7 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
     () => setCollapsed(config.layout.sidebarDefaultCollapsed),
     [config.layout.sidebarDefaultCollapsed],
   );
+
   return (
     <div
       className={`app-shell ${collapsed ? 'is-collapsed' : ''} ${mobile ? 'nav-open' : ''}`}
@@ -82,9 +86,11 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
               message="Browser storage is unavailable. Changes will last only for this session."
             />
           )}
-          <Suspense fallback={<PageSkeleton />}>
-            <Outlet />
-          </Suspense>
+          <PageTransition transitionKey={location.pathname}>
+            <Suspense fallback={<PageSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </PageTransition>
           <footer className="page-footer">
             <span>{config.brand.name} workspace</span>
             <span>Demo data · No live financial transactions</span>
