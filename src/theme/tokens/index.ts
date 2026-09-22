@@ -1,6 +1,6 @@
-import type { TemplateConfig } from '../../config/template.config';
-import { createPrimitiveColors, shadeSteps, type PrimitiveColorTokens } from './palette';
-import { createSemanticColors, type SemanticColorTokens } from './semantic';
+import type { TemplateConfig } from '../../config/template.config.ts';
+import { createPrimitiveColors, shadeSteps, type PrimitiveColorTokens } from './palette.ts';
+import { createSemanticColors, type SemanticColorTokens } from './semantic.ts';
 import {
   deriveElevation,
   deriveLayout,
@@ -12,7 +12,7 @@ import {
   type RadiusTokens,
   type SpacingTokens,
   type TypographyTokens,
-} from './foundations';
+} from './foundations.ts';
 
 export interface DesignTokens {
   primitive: PrimitiveColorTokens;
@@ -155,6 +155,6 @@ export function designTokensToCssVariables(tokens: DesignTokens): Record<string,
   return variables;
 }
 
-export * from './palette';
-export * from './semantic';
-export * from './foundations';
+export * from './palette.ts';
+export * from './semantic.ts';
+export * from './foundations.ts';
