@@ -23,11 +23,12 @@ export default function AnimatedSurface({
       className={className}
       initial={{ opacity: 0, y: page ? 6 : 2 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: page ? -2 : 0 }}
-      transition={{ duration: enterDuration, ease: enterEase }}
-      variants={{
-        exit: { transition: { duration: exitDuration, ease: exitEase } },
+      exit={{
+        opacity: 0,
+        y: page ? -2 : 0,
+        transition: { duration: exitDuration, ease: exitEase },
       }}
+      transition={{ duration: enterDuration, ease: enterEase }}
     >
       {children}
     </motion.div>
