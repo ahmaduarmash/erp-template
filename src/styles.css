@@ -1,7 +1,4 @@
 @import 'tailwindcss';
-@theme inline {
-  --color-brand: var(--color-primary);
-}
 * {
   box-sizing: border-box;
 }
@@ -57,7 +54,7 @@ p {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-base);
-  box-shadow: 0 2px 4px #00000002;
+  box-shadow: var(--elevation-xs);
 }
 .app-shell {
   display: grid;
@@ -99,7 +96,7 @@ p {
   flex-shrink: 0;
   background: var(--color-primary);
   border-radius: calc(var(--radius-base) * 0.83);
-  color: white;
+  color: var(--text-on-action);
   font-size: 32px;
   line-height: 1;
   object-fit: contain;
@@ -334,7 +331,7 @@ p {
   min-height: calc(100dvh - 107px);
 }
 .main-content.boxed {
-  max-width: 1300px;
+  max-width: var(--content-max-width);
   margin: auto;
 }
 .page-header {
@@ -749,7 +746,7 @@ p {
   height: 23px;
   border: 0;
   border-radius: 50%;
-  color: white;
+  color: var(--text-on-action);
   font-size: 11px;
   display: grid;
   place-items: center;
@@ -789,7 +786,7 @@ p {
 }
 .preview-logo {
   background: var(--color-primary);
-  color: white;
+  color: var(--text-on-action);
   display: grid;
   place-items: center;
   border-radius: calc(var(--radius-base) * 0.58);
@@ -870,7 +867,7 @@ p {
 .notification-dropdown {
   width: 355px;
   padding: 18px;
-  box-shadow: 0 12px 35px #00000012;
+  box-shadow: var(--elevation-md);
 }
 .notice-compact {
   display: block;
@@ -1215,7 +1212,7 @@ a:focus-visible {
     display: block;
     position: fixed;
     inset: 0;
-    background: #0006;
+    background: var(--overlay-mask);
     z-index: 25;
     border: 0;
   }
