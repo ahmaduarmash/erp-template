@@ -1,5 +1,5 @@
-import type { PrimitiveColorTokens } from './palette';
-import { mixHex, rgba } from './palette';
+import type { PrimitiveColorTokens } from './palette.ts';
+import { mixHex, rgba } from './palette.ts';
 
 export interface SemanticColorTokens {
   bgBase: string;
