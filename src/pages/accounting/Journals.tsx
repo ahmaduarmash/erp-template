@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Journals() {
-  return <ModulePage moduleKey="journal-entries" />;
-}
+import { JournalsWorkspace } from '../erp/AccountingWorkspaces';
+export default JournalsWorkspace;
