@@ -1,0 +1,42 @@
+/* Runtime motion contract. Feature styles may choose properties; timing comes from tokens. */
+.page-tab,
+.nav-link,
+.ant-btn,
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-select-selector,
+.ant-picker,
+.ant-table-wrapper .ant-table-tbody > tr,
+.erp-tree-panel .ant-tree-node-content-wrapper,
+.coa-browser .ant-tree-node-content-wrapper,
+.coa-list-row {
+  transition-duration: var(--motion-micro) !important;
+  transition-timing-function: var(--motion-ease-enter) !important;
+}
+
+.panel,
+.motion-standard-overlay {
+  transition-duration: var(--motion-standard) !important;
+  transition-timing-function: var(--motion-ease-enter) !important;
+}
+
+html[data-motion='off'] *,
+html[data-motion='off'] *::before,
+html[data-motion='off'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
