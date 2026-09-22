@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Payments() {
-  return <ModulePage moduleKey="payments" />;
-}
+import { PaymentsWorkspace } from '../erp/AccountingWorkspaces';
+export default PaymentsWorkspace;
