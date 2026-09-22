@@ -1,2 +1,1 @@
-import { JournalsWorkspace } from '../erp/AccountingWorkspaces';
-export default JournalsWorkspace;
+export { default } from './JournalEntriesPage';
