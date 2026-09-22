@@ -1,8 +1,7 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
-import { Button, Drawer, Space } from 'antd';
+import { Button, Space } from 'antd';
 import type { CrudShellProps } from './CrudModal';
-import { useMotionPolicy } from '../../lib/motion';
-const Frame = lazy(() => import('../../lib/motion/DialogFrame'));
+import { AnimatedDrawer } from '../../lib/motion/overlays';
+
 export function CrudDrawer({
   open,
   title,
@@ -12,29 +11,13 @@ export function CrudDrawer({
   loading,
   saveLabel = 'Save changes',
 }: CrudShellProps) {
-  const { enabled, duration } = useMotionPolicy();
-  const [present, setPresent] = useState(open);
-  useEffect(() => {
-    if (open || !enabled) setPresent(open);
-  }, [open, enabled]);
   return (
-    <Drawer
+    <AnimatedDrawer
       title={title}
-      open={enabled ? open || present : open}
+      open={open}
       onClose={onCancel}
       width={560}
       destroyOnHidden
-      drawerRender={(node) =>
-        enabled ? (
-          <Suspense fallback={node}>
-            <Frame open={open} duration={duration} onExit={() => setPresent(false)}>
-              {node}
-            </Frame>
-          </Suspense>
-        ) : (
-          node
-        )
-      }
       footer={
         <Space>
           <Button onClick={onCancel}>Close</Button>
@@ -45,6 +28,6 @@ export function CrudDrawer({
       }
     >
       {children}
-    </Drawer>
+    </AnimatedDrawer>
   );
 }
