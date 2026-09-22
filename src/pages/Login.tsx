@@ -2,7 +2,7 @@ import { Button, Form, Input, Tag } from 'antd';
 import { ArrowRightOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useTemplate } from '../theme/ThemeProvider';
 import { Brand } from '../components/shell/Sidebar';
-export default function Login({ onLogin }: { onLogin: () => void }) {
+export default function Login({ onLogin }: { onLogin: (email: string) => void }) {
   const { config } = useTemplate();
   return (
     <main className="login-page">
@@ -30,7 +30,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
           <p className="muted">Enter the demo workspace to explore the starter.</p>
           <Form
             layout="vertical"
-            onFinish={onLogin}
+            onFinish={(values: { email: string }) => onLogin(values.email)}
             initialValues={{ email: 'alex@example.com', password: 'demo-workspace' }}
           >
             <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
@@ -44,8 +44,8 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
             </Button>
           </Form>
           <p className="login-disclaimer">
-            Demo only. Any valid email and 8-character password are accepted. No credentials are
-            sent or saved. Connect your authentication API before production use.
+            Demo only. Any valid email and 8-character password are accepted. The adapter stores only
+            demo session identity; replace it with your authentication provider before production use.
           </p>
         </div>
       </section>
