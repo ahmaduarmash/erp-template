@@ -13,6 +13,7 @@ import {
   type SpacingTokens,
   type TypographyTokens,
 } from './foundations.ts';
+import { deriveMotion, type MotionTokens } from './motion.ts';
 
 export interface DesignTokens {
   primitive: PrimitiveColorTokens;
@@ -22,6 +23,7 @@ export interface DesignTokens {
   typography: TypographyTokens;
   elevation: ElevationTokens;
   layout: LayoutTokens;
+  motion: MotionTokens;
 }
 
 export function resolveDesignTokens(config: TemplateConfig, dark: boolean): DesignTokens {
@@ -34,10 +36,12 @@ export function resolveDesignTokens(config: TemplateConfig, dark: boolean): Desi
     typography: deriveTypography(config.typography.fontFamily, config.typography.baseFontSize),
     elevation: deriveElevation(dark),
     layout: deriveLayout(config),
+    motion: deriveMotion(config.motion.speed),
   };
 }
 
 const px = (value: number) => `${value}px`;
+const ms = (value: number) => `${Math.round(value * 1000)}ms`;
 
 export function designTokensToCssVariables(tokens: DesignTokens): Record<string, string> {
   const variables: Record<string, string> = {};
@@ -134,6 +138,16 @@ export function designTokensToCssVariables(tokens: DesignTokens): Record<string,
     '--drawer-width-md': px(tokens.layout.drawerWidthMd),
     '--drawer-width-lg': px(tokens.layout.drawerWidthLg),
 
+    '--motion-micro': ms(tokens.motion.micro),
+    '--motion-standard': ms(tokens.motion.standard),
+    '--motion-page': ms(tokens.motion.page),
+    '--motion-modal-enter': ms(tokens.motion.modalEnter),
+    '--motion-modal-exit': ms(tokens.motion.modalExit),
+    '--motion-drawer-enter': ms(tokens.motion.drawerEnter),
+    '--motion-drawer-exit': ms(tokens.motion.drawerExit),
+    '--motion-ease-enter': tokens.motion.easingEnterCss,
+    '--motion-ease-exit': tokens.motion.easingExitCss,
+
     // Compatibility aliases for existing screens. New code should use semantic/runtime tokens above.
     '--color-primary': tokens.semantic.actionPrimary,
     '--color-accent': tokens.primitive.accent[500],
@@ -158,3 +172,4 @@ export function designTokensToCssVariables(tokens: DesignTokens): Record<string,
 export * from './palette.ts';
 export * from './semantic.ts';
 export * from './foundations.ts';
+export * from './motion.ts';
