@@ -1,9 +1,10 @@
-import { Component, lazy, Suspense, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, type ReactNode } from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Button, Result } from 'antd';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { WorkspaceProvider } from './data/WorkspaceProvider';
 import { PageSkeleton } from './components/feedback';
+import { AuthProvider, useAuth } from './auth/AuthProvider';
 const Shell = lazy(() => import('./components/shell/AppShell'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -25,6 +26,7 @@ const Payments = lazy(() => import('./pages/accounting/Payments'));
 const Expenses = lazy(() => import('./pages/accounting/Expenses'));
 const Customers = lazy(() => import('./pages/accounting/Customers'));
 const Users = lazy(() => import('./pages/system/Users'));
+
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {
@@ -43,32 +45,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean 
     );
   }
 }
-export default function App() {
-  const [authenticated, setAuthenticated] = useState(() => {
-    try {
-      return sessionStorage.getItem('aster:demo-session') === 'active';
-    } catch {
-      return false;
-    }
-  });
-  const login = () => {
-    try {
-      sessionStorage.setItem('aster:demo-session', 'active');
-    } catch {
-      /* session-only fallback */
-    }
-    setAuthenticated(true);
-  };
-  const logout = () => {
-    try {
-      sessionStorage.removeItem('aster:demo-session');
-    } catch {
-      /* session-only fallback */
-    }
-    setAuthenticated(false);
-  };
+
+function AppRoutes() {
+  const auth = useAuth();
   return (
-    <ThemeProvider userId="demo-user">
+    <ThemeProvider userId={auth.user?.id ?? 'anonymous-demo'}>
       <ErrorBoundary>
         <WorkspaceProvider>
           <HashRouter>
@@ -77,12 +58,20 @@ export default function App() {
                 <Route
                   path="/login"
                   element={
-                    authenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={login} />
+                    auth.authenticated ? (
+                      <Navigate to="/dashboard" replace />
+                    ) : (
+                      <Login onLogin={auth.login} />
+                    )
                   }
                 />
                 <Route
                   element={
-                    authenticated ? <Shell onLogout={logout} /> : <Navigate to="/login" replace />
+                    auth.authenticated ? (
+                      <Shell onLogout={auth.logout} />
+                    ) : (
+                      <Navigate to="/login" replace />
+                    )
                   }
                 >
                   <Route index element={<Navigate to="/dashboard" replace />} />
@@ -112,5 +101,13 @@ export default function App() {
         </WorkspaceProvider>
       </ErrorBoundary>
     </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }
