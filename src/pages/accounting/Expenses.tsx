@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Expenses() {
-  return <ModulePage moduleKey="expenses" />;
-}
+import { ExpensesWorkspace } from '../erp/AccountingWorkspaces';
+export default ExpensesWorkspace;
