@@ -1,4 +1,2 @@
-import ModulePage from '../ModulePage';
-export default function Customers() {
-  return <ModulePage moduleKey="customers" />;
-}
+import { CustomersWorkspace } from '../erp/AccountingWorkspaces';
+export default CustomersWorkspace;
