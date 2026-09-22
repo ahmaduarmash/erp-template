@@ -47,7 +47,7 @@
   min-height: var(--control-height);
   padding: var(--space-1) var(--space-2) !important;
   border-radius: var(--radius-control);
-  transition: background-color 120ms ease, box-shadow 120ms ease, color 120ms ease;
+  transition: background-color var(--motion-micro) var(--motion-ease-enter), box-shadow var(--motion-micro) var(--motion-ease-enter), color var(--motion-micro) var(--motion-ease-enter);
 }
 .coa-browser .ant-tree-node-content-wrapper:hover { background: var(--bg-subtle); }
 .coa-browser .ant-tree-node-content-wrapper.ant-tree-node-selected {
@@ -115,7 +115,7 @@
   color: inherit;
   text-align: left;
   background: transparent;
-  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+  transition: background-color var(--motion-micro) var(--motion-ease-enter), border-color var(--motion-micro) var(--motion-ease-enter), transform var(--motion-micro) var(--motion-ease-enter);
 }
 .coa-list-row:hover { background: var(--bg-subtle); transform: translateX(1px); }
 .coa-list-row.selected { border-color: var(--border-strong); background: var(--bg-selected); }
