@@ -2,19 +2,17 @@ import {
   AppstoreOutlined,
   ApartmentOutlined,
   BankOutlined,
-  BellOutlined,
   DashboardOutlined,
-  FileSearchOutlined,
   LeftOutlined,
   RightOutlined,
-  SettingOutlined,
-  TeamOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 import { NavLink } from 'react-router-dom';
 import { useTemplate } from '../../theme/ThemeProvider';
-import { modules } from '../../data/modules';
+import { routeRegistry } from '../../config/routes';
 import { MotionSurface } from '../../lib/motion';
+
 export function Brand() {
   const { config } = useTemplate();
   return (
@@ -31,6 +29,14 @@ export function Brand() {
     </div>
   );
 }
+
+const iconFor = (group: string) => {
+  if (group === 'Workspace') return <DashboardOutlined />;
+  if (group === 'Inventory') return <AppstoreOutlined />;
+  if (group === 'Accounting') return <BankOutlined />;
+  return <SafetyCertificateOutlined />;
+};
+
 export function Sidebar({
   collapsed,
   toggle,
@@ -53,6 +59,7 @@ export function Sidebar({
       </NavLink>
     </Tooltip>
   );
+  const groups = ['Workspace', 'Inventory', 'Accounting', 'Organization'] as const;
   return (
     <MotionSurface className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-head">
@@ -66,27 +73,14 @@ export function Sidebar({
         </div>
       </div>
       <nav aria-label="Main navigation">
-        <div className="nav-section">Workspace</div>
-        {link('/dashboard', 'Overview', <DashboardOutlined />)}
-        {(['Inventory', 'Accounting'] as const).map((group) => (
+        {groups.map((group) => (
           <div key={group}>
             <div className="nav-section">{group}</div>
-            {modules
-              .filter((m) => m.group === group)
-              .map((m) =>
-                link(
-                  `/${group.toLowerCase()}/${m.key}`,
-                  m.title,
-                  group === 'Inventory' ? <AppstoreOutlined /> : <BankOutlined />,
-                ),
-              )}
+            {routeRegistry
+              .filter((route) => route.group === group)
+              .map((route) => link(route.path, route.title, iconFor(group)))}
           </div>
         ))}
-        <div className="nav-section">Organization</div>
-        {link('/system/users', 'Team & access', <TeamOutlined />)}
-        {link('/system/notifications', 'Notifications', <BellOutlined />)}
-        {link('/system/audit-log', 'Audit log', <FileSearchOutlined />)}
-        {link('/settings', 'Settings', <SettingOutlined />)}
       </nav>
       <div className="sidebar-footer">
         <span className="nav-label">
