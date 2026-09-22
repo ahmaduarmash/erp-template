@@ -74,7 +74,7 @@ These are non-negotiable product rules for the implementation.
 - auth/repository boundaries
 - GitHub Pages preview
 
-The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations.
+The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations. Phase 2 now establishes the same centralized contract for motion and feedback.
 
 ---
 
@@ -133,7 +133,7 @@ We should implement phases sequentially unless a later item is explicitly indepe
 | Phase | Area | Status |
 | --- | --- | --- |
 | 1 | Runtime Design Token Engine | [x] |
-| 2 | Motion & Feedback Engine | [-] |
+| 2 | Motion & Feedback Engine | [x] |
 | 3 | Enterprise Workspace Shell | [ ] |
 | 4 | Core Visual Primitives | [ ] |
 | 5 | Overlay & Interaction Architecture | [ ] |
@@ -432,15 +432,15 @@ useMotionTokens()
 
 ## 8.4 Reusable animated surfaces
 
-- [ ] `AnimatedModal`
-- [ ] `AnimatedDrawer`
-- [ ] `AnimatedPopover`
-- [ ] `AnimatedDropdown`
-- [ ] `PageTransition`
-- [ ] `TabTransition`
-- [ ] standardized press interaction
-- [ ] list insertion/removal transition
-- [ ] reduced-motion support
+- [x] `AnimatedModal`
+- [x] `AnimatedDrawer`
+- [x] `AnimatedPopover`
+- [x] `AnimatedDropdown`
+- [x] `PageTransition`
+- [x] `TabTransition`
+- [x] standardized press interaction
+- [x] list insertion/removal transition
+- [x] reduced-motion support
 
 ## 8.5 Motion philosophy
 
@@ -477,6 +477,24 @@ Sound remains intentionally subtle:
 
 Default sound behavior can be finalized during this phase.
 
+## Implementation record — 2026-09-23
+
+- Added `src/theme/tokens/motion.ts` with Fast/Normal interaction-specific timing matrices, shared entry/exit easing, and the `{ stiffness: 500, damping: 35 }` spring contract.
+- Motion tokens are resolved with the rest of the runtime theme and emitted as CSS variables (`--motion-micro`, `--motion-standard`, page/modal/drawer enter/exit values and easing variables).
+- `ThemeProvider` now owns OS `prefers-reduced-motion` state. OS reduced motion is a hard veto, and the effective value is shared by Motion for React, CSS, and Ant Design motion configuration.
+- Added `useMotionTokens()` as the primary runtime motion API. The older `useMotionPolicy()` remains only as a compatibility bridge while older code is migrated.
+- Added reusable `AnimatedModal`, `AnimatedDrawer`, `AnimatedPopover`, and `AnimatedDropdown` surfaces in `src/lib/motion/overlays.tsx`.
+- Added `PageTransition`, `TabTransition`, and `ListTransition` in `src/lib/motion/transitions.tsx`; route content now uses the shared page transition.
+- Modal and drawer transitions are intentionally distinct: centered modals use a subtle opacity/vertical/scale change, while drawers preserve right-side spatial context. Both use faster exits than entries.
+- Existing generic CRUD modal/drawer shells now consume the shared animated overlay primitives instead of implementing local motion behavior.
+- Retained delegated button press handling to avoid per-cell listeners, reduced its scale response to a restrained `0.985`, and tied duration/easing to runtime motion tokens.
+- Removed the legacy routine table-row stagger animation. Normal filtering, paging and refreshes no longer replay decorative row animation.
+- Added `src/theme/motion.css`, loaded after compatibility CSS, so effective shared CSS transition timing follows runtime motion tokens. COA-specific transitions were migrated away from local millisecond constants.
+- Existing synthesized Web Audio feedback was audited and retained: sound defaults off, volume remains low, categories are click/success/warning/notification, and no audio assets are introduced.
+- Added automated motion-matrix and runtime CSS/reduced-motion contract tests.
+- Validation: GitHub Actions `npm test` and `npm run build` pass on the Phase 2 code head; the GitHub Pages preview build also passes and deploys through the existing `v2.0` workflow.
+- Scope boundary: Phase 2 did not redesign the workspace shell. Phase 3 remains untouched apart from wiring the existing route outlet through the reusable page-transition primitive.
+
 ## Exit Criteria
 
 - no feature defines its own duration constants,
@@ -484,6 +502,8 @@ Default sound behavior can be finalized during this phase.
 - normal motion feels fast,
 - OS reduced-motion is respected,
 - button interactions feel tactile but not bouncy.
+
+**Status: [x] Complete — runtime motion is centralized, overlays use shared enter/exit behavior, OS reduced-motion is enforced, routine decorative table stagger was removed, press feedback is restrained, tests/build pass, and the preview workflow builds successfully.**
 
 ---
 
@@ -1227,18 +1247,18 @@ Test:
 - [ ] semantic buttons/links
 - [ ] dialog focus trapping
 - [ ] drawer focus trapping
-- [ ] reduced motion
+- [x] reduced motion
 - [ ] color contrast
 - [ ] status not communicated by color alone
 
 ## Performance
 
-- [ ] avoid per-cell motion listeners
+- [x] avoid per-cell motion listeners
 - [ ] avoid unnecessary rerenders from theme changes
 - [ ] virtualize large tables
 - [ ] lazy load heavy feature screens
 - [ ] prevent layout thrash during motion
-- [ ] use transform/opacity for animation where possible
+- [x] use transform/opacity for animation where possible
 
 ## Automated guardrails
 
@@ -1247,11 +1267,11 @@ Add tests/lint checks where practical for:
 - [x] no decorative gradient declarations
 - [x] no raw feature-level theme hex colors
 - [ ] no arbitrary feature-specific radius rules
-- [ ] no feature-specific animation durations
+- [x] no feature-specific animation durations
 - [x] token resolver tests
 - [x] palette generator tests
 - [x] settings migration tests
-- [ ] reduced-motion tests
+- [x] reduced-motion tests
 - [x] light/dark token resolution tests
 
 ## Visual/E2E coverage
@@ -1506,7 +1526,14 @@ Use this section as work progresses.
 - [x] Legacy AntD algorithm control removed; legacy Spacious density safely migrates to Comfortable.
 - [x] Decorative gradients and shared CSS raw theme hex values removed; automated constitution guard added.
 - [x] Phase 1 validation: unit tests and TypeScript/Vite production build pass; Pages preview build passes.
-- [-] Phase 2 — Motion & Feedback Engine started. Next action is to audit existing motion helpers before changing them.
+- [x] Phase 2 — Motion & Feedback Engine completed.
+- [x] Fast/Normal interaction-specific runtime motion matrix, easing and spring tokens implemented.
+- [x] Shared animated modal/drawer/popover/dropdown plus page/tab/list transition primitives implemented.
+- [x] OS reduced-motion is a global hard veto across Motion for React, CSS and Ant Design.
+- [x] Delegated restrained press feedback retained; routine table-row stagger removed.
+- [x] Existing synthesized Web Audio feedback audited and retained with sound off by default.
+- [x] Phase 2 validation: motion contract tests, full test suite, TypeScript/Vite build and Pages preview build pass.
+- [ ] Phase 3 intentionally not started per implementation checkpoint. Await explicit continuation before changing the enterprise workspace shell.
 
 Future entries should record:
 
@@ -1522,14 +1549,10 @@ YYYY-MM-DD
 
 # 25. Immediate Next Step
 
-Phase 1 is complete. Continue sequentially with:
+Phase 2 is complete and **Phase 3 has not been started**.
 
-> **Phase 2 — Motion & Feedback Engine**
-
-First inspect the existing `src/lib/motion` implementation and reuse sound/feedback foundations where they already match the product rules. Centralize durations/easing/reduced-motion behavior before migrating overlays or adding new interaction wrappers.
-
-After Phase 2 passes its exit criteria, proceed to:
+When implementation is explicitly resumed, the next sequential phase is:
 
 > **Phase 3 — Enterprise Workspace Shell**
 
-Only after those foundations are stable should we continue redesigning individual ERP modules.
+Before changing the shell, re-inspect the current `v2.0` implementation and Phase 3 acceptance criteria. Do not begin Phase 3 as part of the Phase 2 completion batch.
