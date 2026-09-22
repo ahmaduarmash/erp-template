@@ -21,7 +21,6 @@ import {
   Space,
   Tag,
   Tooltip,
-  Typography,
   type TableColumnsType,
 } from 'antd';
 import { PageHeader } from '../../components/shell/PageHeader';
