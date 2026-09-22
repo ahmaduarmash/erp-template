@@ -1,4 +1,4 @@
-import type { TemplateConfig } from '../../config/template.config';
+import type { TemplateConfig } from '../../config/template.config.ts';
 
 export interface SpacingTokens {
   unit: number;
