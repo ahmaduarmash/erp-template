@@ -1,6 +1,6 @@
 # ERP Template v2.0 — Enterprise SaaS Design System Implementation Roadmap
 
-> **Status:** Active planning document  
+> **Status:** Active implementation document  
 > **Branch:** `v2.0`  
 > **Last reviewed:** 2026-09-23  
 > **Purpose:** Living implementation plan for evolving `erp-template` into a highly polished, runtime-customizable, enterprise-grade SaaS/ERP design system and workspace shell.
@@ -74,17 +74,7 @@ These are non-negotiable product rules for the implementation.
 - auth/repository boundaries
 - GitHub Pages preview
 
-However, the visual layer currently has important architectural problems that this roadmap will correct:
-
-- some theme-sensitive values are still hardcoded,
-- spacing is not fully token-derived,
-- typography is only partially tokenized,
-- multiple feature CSS files can drift visually,
-- gradients were introduced during the recent styling pass and must be removed,
-- motion still lacks a complete interaction-specific duration system,
-- the shell is still a conventional single sidebar rather than a scalable enterprise workspace shell,
-- record inspection / workflow overlays are not standardized,
-- some pages still rely on local styling instead of shared design primitives.
+The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations.
 
 ---
 
@@ -142,8 +132,8 @@ We should implement phases sequentially unless a later item is explicitly indepe
 
 | Phase | Area | Status |
 | --- | --- | --- |
-| 1 | Runtime Design Token Engine | [ ] |
-| 2 | Motion & Feedback Engine | [ ] |
+| 1 | Runtime Design Token Engine | [x] |
+| 2 | Motion & Feedback Engine | [-] |
 | 3 | Enterprise Workspace Shell | [ ] |
 | 4 | Core Visual Primitives | [ ] |
 | 5 | Overlay & Interaction Architecture | [ ] |
@@ -327,22 +317,35 @@ Avoid maintaining a separate visual system for Ant components.
 
 ## 7.5 Tasks
 
-- [ ] Define token type model
-- [ ] Build shade-scale generator
-- [ ] Build semantic light theme mapping
-- [ ] Build semantic dark theme mapping
-- [ ] Build spacing/density derivation
-- [ ] Build radius derivation
-- [ ] Build typography derivation
-- [ ] Build elevation derivation
-- [ ] Build layout derivation
-- [ ] Update `ThemeProvider`
-- [ ] Update `resolveConfig`
-- [ ] Map tokens to AntD
-- [ ] Map tokens to Tailwind
-- [ ] Remove decorative gradients
-- [ ] Remove raw theme colors from shared CSS
-- [ ] Add token unit tests
+- [x] Define token type model
+- [x] Build shade-scale generator
+- [x] Build semantic light theme mapping
+- [x] Build semantic dark theme mapping
+- [x] Build spacing/density derivation
+- [x] Build radius derivation
+- [x] Build typography derivation
+- [x] Build elevation derivation
+- [x] Build layout derivation
+- [x] Update `ThemeProvider`
+- [x] Update `resolveConfig`
+- [x] Map tokens to AntD
+- [x] Map tokens to Tailwind
+- [x] Remove decorative gradients
+- [x] Remove raw theme colors from shared CSS
+- [x] Add token unit tests
+
+## Implementation record — 2026-09-23
+
+- Added `src/theme/tokens/palette.ts`, `semantic.ts`, `foundations.ts`, and `index.ts` as the runtime token resolver.
+- Added runtime CSS-variable emission and `src/theme/tokens/tailwind.css`; Ant Design `ConfigProvider`, Tailwind aliases, and plain CSS now consume the same resolved token object.
+- Removed the user-facing/internal AntD algorithm setting. Theme mode is now strictly Light/Dark/System.
+- Removed `spacious` from the supported density contract; persisted legacy `spacious` preferences migrate safely to `comfortable`.
+- Preserved legacy CSS variable names as compatibility aliases so existing modules can migrate incrementally without creating a risky whole-app rewrite. New work should use semantic/runtime tokens directly.
+- Reworked `design-v2.css`, `coa-v2.css`, and `journal-v2.css` to remove decorative gradients and move theme decisions to runtime tokens while preserving domain layout behavior.
+- Removed remaining raw theme hex values from shared runtime CSS and added an automated guard that fails tests if decorative gradients or raw hex theme colors return.
+- Added palette, token resolver, legacy preference migration, light/dark, density/radius/type/layout/elevation, and CSS constitution tests.
+- Validation: GitHub Actions `npm test` and `npm run build` pass on `v2.0`; GitHub Pages preview build also passes for the Phase 1 head.
+- Technical debt intentionally deferred: existing shell/module layout values that are not theme decisions remain in their current CSS until their scheduled Phase 3/9 migrations.
 
 ## Exit Criteria
 
@@ -358,6 +361,8 @@ Phase 1 is complete only when changing these settings updates the real applicati
 - content width
 
 And the application contains no decorative gradient backgrounds.
+
+**Status: [x] Complete — exit criteria validated through the runtime resolver, live settings wiring, CSS constitution tests, production build, and preview build.**
 
 ---
 
@@ -1239,15 +1244,15 @@ Test:
 
 Add tests/lint checks where practical for:
 
-- [ ] no decorative gradient declarations
-- [ ] no raw feature-level theme hex colors
+- [x] no decorative gradient declarations
+- [x] no raw feature-level theme hex colors
 - [ ] no arbitrary feature-specific radius rules
 - [ ] no feature-specific animation durations
-- [ ] token resolver tests
-- [ ] palette generator tests
-- [ ] settings migration tests
+- [x] token resolver tests
+- [x] palette generator tests
+- [x] settings migration tests
 - [ ] reduced-motion tests
-- [ ] light/dark token resolution tests
+- [x] light/dark token resolution tests
 
 ## Visual/E2E coverage
 
@@ -1495,7 +1500,13 @@ Use this section as work progresses.
 - [x] UX principles documented.
 - [x] Implementation phases agreed.
 - [x] Living roadmap added to `v2.0`.
-- [ ] Phase 1 implementation not started under this roadmap.
+- [x] Phase 1 — Runtime Design Token Engine completed.
+- [x] Runtime palette, semantic color, typography, spacing/density, radius, elevation, and layout tokens implemented.
+- [x] Ant Design, CSS variables, and Tailwind v4 aliases unified behind the same runtime resolver.
+- [x] Legacy AntD algorithm control removed; legacy Spacious density safely migrates to Comfortable.
+- [x] Decorative gradients and shared CSS raw theme hex values removed; automated constitution guard added.
+- [x] Phase 1 validation: unit tests and TypeScript/Vite production build pass; Pages preview build passes.
+- [-] Phase 2 — Motion & Feedback Engine started. Next action is to audit existing motion helpers before changing them.
 
 Future entries should record:
 
@@ -1511,17 +1522,13 @@ YYYY-MM-DD
 
 # 25. Immediate Next Step
 
-When implementation resumes, **do not continue page-by-page redesign first**.
-
-Start with:
-
-> **Phase 1 — Runtime Design Token Engine**
-
-Finish and validate it completely before proceeding to:
+Phase 1 is complete. Continue sequentially with:
 
 > **Phase 2 — Motion & Feedback Engine**
 
-Then:
+First inspect the existing `src/lib/motion` implementation and reuse sound/feedback foundations where they already match the product rules. Centralize durations/easing/reduced-motion behavior before migrating overlays or adding new interaction wrappers.
+
+After Phase 2 passes its exit criteria, proceed to:
 
 > **Phase 3 — Enterprise Workspace Shell**
 
