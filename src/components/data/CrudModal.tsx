@@ -1,7 +1,6 @@
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
-import { Modal } from 'antd';
-import { useMotionPolicy } from '../../lib/motion';
-const Frame = lazy(() => import('../../lib/motion/DialogFrame'));
+import type { ReactNode } from 'react';
+import { AnimatedModal } from '../../lib/motion/overlays';
+
 export interface CrudShellProps {
   open: boolean;
   title: string;
@@ -11,35 +10,28 @@ export interface CrudShellProps {
   loading?: boolean;
   saveLabel?: string;
 }
-export function CrudModal({ open, title, onCancel, onSave, children, loading }: CrudShellProps) {
-  const { enabled, duration } = useMotionPolicy();
-  const [present, setPresent] = useState(open);
-  useEffect(() => {
-    if (open || !enabled) setPresent(open);
-  }, [open, enabled]);
+
+export function CrudModal({
+  open,
+  title,
+  onCancel,
+  onSave,
+  children,
+  loading,
+  saveLabel = 'Save changes',
+}: CrudShellProps) {
   return (
-    <Modal
-      open={enabled ? open || present : open}
+    <AnimatedModal
+      open={open}
       title={title}
       onCancel={onCancel}
       onOk={onSave}
       confirmLoading={loading}
-      okText="Save changes"
+      okText={saveLabel}
       width={600}
       destroyOnHidden
-      modalRender={(node) =>
-        enabled ? (
-          <Suspense fallback={node}>
-            <Frame open={open} duration={duration} onExit={() => setPresent(false)}>
-              {node}
-            </Frame>
-          </Suspense>
-        ) : (
-          node
-        )
-      }
     >
       {children}
-    </Modal>
+    </AnimatedModal>
   );
 }
