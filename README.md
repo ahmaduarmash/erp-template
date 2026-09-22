@@ -1,10 +1,12 @@
 # Aster · ERP / SaaS workspace starter
 
-A React 19 + Vite + TypeScript starter with Ant Design v5, Tailwind CSS v4, Motion, Recharts, and asset-free Web Audio feedback. Original visual identity; no second component kit or animation library.
+A production-oriented React 19 + Vite + TypeScript ERP/SaaS frontend starter using Ant Design v5, Tailwind CSS v4, Motion, Recharts, and asset-free Web Audio feedback.
+
+The v2 architecture keeps one visual language while allowing different business objects to use the correct ERP interaction model. Simple masters may use the generic CRUD kit; financial documents, inventory operations, trees, analytics, and security screens use dedicated floorplans.
 
 ## Run
 
-Requires Node.js 24+ (tests use native TypeScript stripping).
+Requires Node.js 24+.
 
 ```sh
 npm ci
@@ -13,87 +15,250 @@ npm run build
 npm test
 ```
 
-Open the Vite URL. Login is **demo-only**: a valid email and any 8-character password enter the local workspace. Passwords are never stored or sent. Routes use a hash router so static hosts need no rewrite rules.
+CI runs tests plus the strict TypeScript/Vite production build on every push and pull request.
 
 ## Reskin in one file
 
-Edit **`src/config/template.config.ts`**. It controls the brand name/logo/tagline, mode, primary/accent colors, radius, typography, density, content width, sidebar, motion, sound, and table defaults. An empty logo URL uses a generated text mark and config-colored SVG favicon. A custom logo URL should point to your supplied asset.
+Edit `src/config/template.config.ts` to change brand identity, colors, radius, typography, density, content width, sidebar behavior, motion, sound, and table defaults.
 
-`ThemeProvider` composes Ant Design's default/dark and compact algorithms. Its resolved tokens are mirrored to root CSS variables; custom UI and charts consume those variables/config rather than a separate palette. Dark + compact is supported. The three allowed variable fonts—Inter, Manrope, Public Sans—are bundled via Fontsource and self-hosted with the application.
+`ThemeProvider` resolves those settings into Ant Design tokens and CSS variables. Project features consume that shared token layer instead of introducing their own palettes.
 
-Appearance settings update the runtime configuration, **not the source file on disk**. Preferences are validated and persisted under `aster:preferences:v1:<userId>`. Mount `ThemeProvider` with a stable authenticated user ID and a React `key` when users change. Project brand identity is never restored from old browser preferences. Existing appearance overrides intentionally take priority over new defaults; use **Reset preferences** to see updated project defaults. Storage failures display a warning instead of breaking the UI. Backend preference sync is an integration point, not a supplied service.
+## ERP floorplans
 
-## Add a CRUD module
+The route registry in `src/config/routes.ts` classifies pages by interaction model:
 
-1. Add a `ModuleDefinition` to `src/data/modules.ts`: a key, title, group, fields, and statuses.
-2. Add a route wrapper, for example:
+- `CRUD` — small/simple reference masters
+- `MASTER_DETAIL` — rich business entities such as Products, Customers, Suppliers
+- `DOCUMENT` — transaction documents such as Purchase Orders, Stock Transfers, Journal Entries, Invoices, Payments
+- `TREE` — hierarchical structures such as Chart of Accounts and Warehouses
+- `ANALYTICAL` — operational/derived views such as Stock Levels and Audit Log
+- `SECURITY` — users, roles, permissions, and scoped access
+- `CUSTOM` — dashboards, approvals, settings, or workflows that do not fit another floorplan
 
-```tsx
-import ModulePage from '../ModulePage';
-export default function Projects() {
-  return <ModulePage moduleKey="projects" />;
-}
-```
+Consistency means the same typography, spacing, tokens, badges, menus, workflow language, tables, drawers and motion — not identical page structure.
 
-3. Register it with `lazy(() => import(...))` in `App.tsx`. Navigation derives from module definitions.
-4. Replace `WorkspaceProvider`'s local adapter with your API; keep the view/component contracts. For custom workflows, compose `DataTable`, `CrudModal` / `CrudDrawer`, `ConfirmPopover`, and `PageHeader` directly.
+## Included v2 workspaces
 
-`DataTable` includes text search, schema-driven column filters/sorting, pagination, selection, confirmed batch deletion, column visibility, details/edit/delete actions, and CSV export. Export includes the filtered/sorted set (or its selected subset), not just the current page. CSV cells are quoted and protected against spreadsheet-formula injection. It is CSV export, not a native XLSX generator.
+### Inventory
 
-## Included pages
+**Products**
+- product/entity cells rather than plain text rows
+- stock/reorder progress
+- inventory value KPIs
+- dedicated product detail drawer with Overview, Inventory, Pricing and Activity tabs
+- product-specific row actions: adjust stock, transfer stock, ledger, archive
+- product form split into General, Inventory and Pricing sections
 
-- Shell: branded demo login, collapsible navigation, mobile navigation, global page search (Cmd/Ctrl+K), notifications, theme toggle, profile menu, breadcrumbs, and closeable route tabs.
-- Dashboard: local record totals, explicitly illustrative historical trends, area/bar/donut charts, sparklines, and recent activity.
-- System: notifications, filterable audit log, users, configurable role/action matrix, profile, password form validation, appearance with live preview, table/notification/general settings.
-- Inventory: products, stock levels, warehouses, transfers, purchase orders, suppliers.
-- Accounting: chart of accounts, two-line journals, invoices, payments, expenses, customers.
+**Stock levels**
+- read/operational availability workspace rather than editable CRUD
+- actual, reserved, incoming, available, projected and reorder columns
+- All / Low stock / Out of stock quick views
+- stock-ledger, adjustment, transfer and replenishment actions
 
-All example modules use the same CRUD kit and save changes to this browser. Mutations append audit events. Initial data is fictional.
+**Warehouses**
+- hierarchical tree workspace
+- internal Receiving / Storage / Dispatch locations
+- selected-warehouse operational detail pane
+- stock, ledger, transfer and child-location actions
 
-## Production integration boundary
+**Stock transfers**
+- multi-line inventory document
+- source and destination warehouses
+- item/UOM/quantity rows
+- Draft → In transit → Received workflow
+- contextual receive, print and cancel actions
 
-This is a **frontend starter**, not an audited accounting engine or a deployed multi-tenant backend. Before using real data:
+**Purchase orders**
+- multi-line purchasing document
+- supplier, dates, destination warehouse and item grid
+- quantity/rate/discount/tax inputs
+- receipt progress and contextual Send / Receive / Bill / Duplicate / Cancel actions
 
-- Replace demo login/session storage with your identity provider and secure server sessions. Implement password change server-side. The sample password screen only validates; it does not claim to change credentials.
-- Enforce tenant scope and permissions on every API operation. The role matrix is editable example configuration, not a client-side security boundary.
-- Replace device-local records with an authenticated API, concurrency control, server validation, server timestamps, and durable append-only audit storage. Never place secrets in Vite environment variables or browser storage.
-- Implement inventory movements/reservations, purchase receiving, invoice line items/taxes, payment settlement, and balanced ledger posting in transactional backend workflows. Changing a sample status currently changes that record only.
-- Replace sample dashboard trends with real aggregates. Currency selection changes the reporting label, not exchange rates.
-- Wire an authenticated notification stream into the notification adapter; no background notification service is included.
-- Add real accessible error/retry states to API-backed queries and use the provided skeleton while loading.
+**Suppliers**
+- business-party master/detail workspace
+- purchasing context, outstanding PO value, contacts, related orders and activity
 
-## Performance, motion, sound
+### Accounting
 
-- Every route is lazy-loaded. Recharts and Motion implementations use dynamic imports; the chart library is not on the login path. Do not eagerly import them into the root shell.
-- Tables automatically use Ant Design virtual scrolling above 200 matching records, with numeric `scroll.x/y`. Pagination remains available. Use server pagination/search for truly large datasets; do not download an entire production database.
-- Memoize columns, selection configuration, and hot callbacks. Keep row IDs stable. Animate only a bounded set of rows and skip row staggering on virtualized sets.
-- Shared Motion surfaces animate transform/opacity and use `layout` for geometry. Modal/drawer frames handle enter/exit. Ant Design's independent motion is disabled to avoid a second uncontrolled animation path.
-- The central motion policy requires the runtime enable flag **and** no OS reduced-motion request. OS reduced motion is always a hard veto, even if `respectReducedMotion` is set false. Recharts' own animations are disabled. CSS also honors reduced motion.
-- Web Audio uses one reusable context, tiny sine envelopes, throttling, and disconnected oscillator nodes. It runs only after a user gesture; errors never delay an action. Master mute, volume, and category controls live in Appearance. No audio files or audio libraries are shipped.
-- Optional feature-detected WebMCP exposes read-only access to the same demo records; unsupported browsers simply skip registration.
+**Chart of accounts**
+- tree-style account workspace
+- account code/type/parent context
+- group vs posting-account behavior in the UI
+- reconciliation and active toggles
+- ledger, add-child, edit and deactivate actions
+
+**Journal entries**
+- arbitrary multi-line debit/credit editor
+- balance validation before save
+- entry type selector
+- Draft → Posted → Reversed workflow
+- quick two-line journal plus full journal editor
+- contextual post, ledger, duplicate and reverse actions
+
+**Sales invoices**
+- customer billing document with line items
+- quantity/rate/discount/tax inputs
+- outstanding balance column
+- Draft / Sent / Paid / Overdue quick views
+- send, record-payment, credit-note, PDF and ledger actions
+
+**Payments**
+- Receive / Pay / Internal Transfer modes
+- party/account selection
+- payment method and posting date
+- outstanding invoice allocation table for party payments
+
+**Expenses**
+- approval queue rather than generic CRUD
+- My expenses / Pending / Approved / Rejected / All views
+- approve, reject, request-changes and approval-history actions
+
+**Customers**
+- business-party master/detail workspace
+- receivable, overdue and credit-limit context
+- contacts/addresses, invoices, payments and activity tabs
+
+### System
+
+**Team & access**
+- user list with role, scope, 2FA, last-active and lifecycle state
+- contextual invite/session/suspend/audit actions
+- role permission matrix including View/Create/Edit/Delete/Submit/Approve/Export
+- scoped access examples for companies, warehouses, departments and customer groups
+
+**Dashboard**
+- operational queues for receivables, purchasing, approvals and low stock
+- charts and recent activity remain part of the shared dashboard shell
+
+## Shared ERP primitives
+
+`src/components/erp/ErpPrimitives.tsx` provides reusable domain UI building blocks:
+
+- `DomainTable`
+- `EntityCell`
+- `MoneyCell`
+- `SemanticStatus`
+- `ActionMenu`
+- `KpiStrip`
+- `QuickViews`
+- `WorkflowBar`
+- `StockProgress`
+- `DocumentSummary`
+
+Row actions follow a SaaS/ERP pattern: frequent contextual actions may stay visible while secondary/destructive actions move to the overflow menu.
+
+Lifecycle/status transitions such as Posted, Received or Paid are modeled as explicit actions; switches are reserved for safe boolean configuration such as Active, Group account or Allow reconciliation.
+
+## Typed domain contracts
+
+`src/data/domain.ts` defines typed contracts for:
+
+- Product / Warehouse / StockBalance
+- StockTransfer / StockTransferLine
+- PurchaseOrder / PurchaseOrderLine
+- Account
+- JournalEntry / JournalLine
+- SalesInvoice / SalesInvoiceLine
+- Payment / PaymentAllocation
+- BusinessParty
+- Expense
+- PermissionMatrixRow
+
+The current fictional demo adapter still projects local records into the screens so the starter remains immediately runnable. Production implementations should persist the typed document models server-side.
+
+## Authentication and authorization boundary
+
+`src/auth/AuthProvider.tsx` replaces direct session logic in `App.tsx` with an adapter boundary.
+
+The included adapter is still intentionally demo-only. Replace it with your identity/session provider in a real project. The route registry includes permission identifiers; production applications must enforce the same permissions and tenant scope on the backend.
+
+## Data/repository boundary
+
+`src/data/repository.ts` defines the production repository contract for querying and mutating ERP entities with support for search, filters, paging and sorting.
+
+`WorkspaceProvider` remains the fictional local/demo adapter. A real project should replace it with authenticated API-backed repositories that provide:
+
+- tenant scope on every query/mutation
+- server-side validation
+- transactions for accounting/inventory workflows
+- optimistic concurrency/version checks
+- server timestamps
+- durable append-only audit storage
+- server pagination/search/filtering
+
+Never rely on client-side permission checks as a security boundary.
+
+## Generic CRUD remains available
+
+`src/pages/ModulePage.tsx` and the existing CRUD modal/drawer/table kit remain available for small reference masters where a specialized workflow would add no value.
+
+Use generic CRUD for entities such as categories, units, regions, designations, vehicle types or other small lookup tables.
+
+Do not force transactional or hierarchical business objects into this pattern.
+
+## Production accounting/inventory boundary
+
+This repository is a frontend starter, not an audited accounting engine or inventory ledger.
+
+Before connecting real business data, implement server-side transactional workflows for:
+
+- inventory movements and reservations
+- receiving and stock valuation
+- balanced ledger posting
+- immutable/reversible posted accounting entries
+- invoice taxes, payments and credit notes
+- payment allocation/reconciliation
+- approval authorization
+- document locking/versioning
+
+Changing a local demo status is illustrative UI behavior only.
+
+## Performance and UX
+
+- Routes remain lazy loaded.
+- Existing generic tables virtualize large local result sets.
+- Production adapters should use server paging/search for large data volumes.
+- Motion follows the central motion policy and OS reduced-motion preference.
+- ERP-specific layout rules live in `src/erp.css` instead of expanding the global stylesheet further.
+- Responsive fallbacks collapse split views, KPI strips and line editors for smaller screens.
 
 ## Structure
 
 ```text
 src/
-  config/template.config.ts
-  theme/                     # validation, Ant Design provider, CSS token sync
+  auth/
+    AuthProvider.tsx
+  config/
+    template.config.ts
+    routes.ts
+  theme/
   components/
-    shell/                   # sidebar, topbar, headers, tabs
-    data/                    # reusable CRUD kit
-    feedback/                # toast/sound pairing, empty state, skeleton
-    charts/                  # lazy Recharts widgets
-  data/                      # schemas, fictional seed, replaceable local adapter
-  lib/
-    motion/                  # policy, lazy surfaces and dialog frames
-    sound/                   # synth and hook
+    shell/
+    data/
+    erp/
+      ErpPrimitives.tsx
+    feedback/
+    charts/
+  data/
+    domain.ts
+    modules.ts
+    repository.ts
+    WorkspaceProvider.tsx
   pages/
+    erp/
+      InventoryWorkspaces.tsx
+      AccountingWorkspaces.tsx
+      SecurityWorkspace.tsx
     inventory/
     accounting/
     system/
-tests/core.test.mjs           # config safety, CSV safety, schemas, constraints
+  lib/
+  erp.css
+  styles.css
 ```
 
 ## Verification
 
-`npm run build` runs strict TypeScript checking and a Vite production build. `npm test` checks config validation, safe CSV handling, all seed schemas, and sample business constraints. A 5,000-record fixture checks unique IDs; it is **not a browser performance benchmark**. Browser visual, accessibility, WebMCP runtime, and frame-rate QA have not been performed in this delivery. Run those checks against your target devices before production release.
+`npm run build` performs strict TypeScript checking followed by the Vite production build. `npm test` validates configuration safety, CSV safety, seed integrity, business constraints, large-row identity behavior, and ERP floorplan classification for critical routes.
+
+Browser visual QA, accessibility QA and backend integration testing still need to be performed by each project against its supported devices and APIs.
