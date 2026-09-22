@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { csvCell } from '../src/lib/csv.ts';
 import { resolveConfig } from '../src/theme/resolveConfig.ts';
 import { templateConfig } from '../src/config/template.config.ts';
@@ -73,6 +74,22 @@ test('Runtime tokens derive semantic light/dark, density, radius, type and layou
   assert.ok(light.spacing.space6 > light.spacing.space3);
   assert.ok(light.typography.headingLg > light.typography.textMd);
   assert.notEqual(light.elevation.md, dark.elevation.md);
+});
+
+test('Runtime CSS contains no decorative gradients or raw hex theme colors', () => {
+  const cssFiles = [
+    'src/styles.css',
+    'src/erp.css',
+    'src/design-v2.css',
+    'src/coa-v2.css',
+    'src/journal-v2.css',
+    'src/theme/tokens/tailwind.css',
+  ];
+  for (const file of cssFiles) {
+    const css = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
+    assert.equal(/\b(?:linear|radial|conic)-gradient\s*\(/i.test(css), false, `${file} contains a decorative gradient`);
+    assert.equal(/#[\da-f]{3,8}\b/i.test(css), false, `${file} contains a raw hex theme color`);
+  }
 });
 
 test('Every module has unique seed IDs, valid statuses and required fields', () => {
