@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTemplate } from '../../theme/ThemeProvider';
 import { useWorkspace } from '../../data/WorkspaceProvider';
 import { modules } from '../../data/modules';
+
 export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () => void }) {
   const { dark, setGroup, config } = useTemplate();
   const { profile, notices, markRead } = useWorkspace();
@@ -19,6 +20,7 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
   const location = useLocation();
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState('');
+
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
@@ -29,6 +31,7 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, []);
+
   const routes = [
     { title: 'Overview', path: '/dashboard' },
     ...modules.map((m) => ({ title: m.title, path: `/${m.group.toLowerCase()}/${m.key}` })),
@@ -39,6 +42,7 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
   ];
   const filtered = routes.filter((r) => r.title.toLowerCase().includes(query.toLowerCase()));
   const visibleNotices = notices.filter((n) => config.notifications[n.category]);
+
   return (
     <>
       <header className="topbar">
@@ -64,12 +68,7 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
               type="text"
               aria-label="Toggle theme"
               icon={dark ? <SunOutlined /> : <MoonOutlined />}
-              onClick={() =>
-                setGroup('theme', {
-                  mode: dark ? 'light' : 'dark',
-                  algorithm: config.theme.algorithm === 'dark' ? 'default' : config.theme.algorithm,
-                })
-              }
+              onClick={() => setGroup('theme', { mode: dark ? 'light' : 'dark' })}
             />
           </Tooltip>
           <Dropdown
