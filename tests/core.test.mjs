@@ -102,6 +102,7 @@ test('Runtime CSS contains no decorative gradients or raw hex theme colors', () 
     'src/coa-v2.css',
     'src/journal-v2.css',
     'src/components/primitives/primitives.css',
+    'src/components/overlays/overlays.css',
     'src/components/shell/shell.css',
     'src/theme/tokens/tailwind.css',
     'src/theme/motion.css',
@@ -154,6 +155,37 @@ test('Shared visual primitive vocabulary is exported and token-driven', () => {
     assert.match(css, new RegExp(`var\\(${token}\\)`));
 });
 
+test('Overlay interaction architecture exports intent-specific surfaces and consumes runtime tokens', () => {
+  const source = readFileSync(new URL('../src/components/overlays/index.tsx', import.meta.url), 'utf8');
+  for (const surface of ['CreateModal', 'EditModal', 'RecordDrawer', 'ApprovalDrawer', 'ConfirmActionPopover'])
+    assert.match(source, new RegExp(`export function ${surface}\\b`));
+  assert.match(source, /AnimatedModal/);
+  assert.match(source, /AnimatedDrawer/);
+  assert.match(source, /AnimatedPopover/);
+
+  const css = readFileSync(new URL('../src/components/overlays/overlays.css', import.meta.url), 'utf8');
+  for (const token of ['--space-3', '--border-subtle', '--text-primary', '--bg-surface', '--drawer-width'])
+    assert.match(css, new RegExp(token === '--drawer-width' ? '--drawer-width-(?:sm|md|lg)' : `var\\(${token}\\)`));
+});
+
+test('Legacy CRUD compatibility uses explicit intent while retaining a safe migration fallback', () => {
+  const source = readFileSync(new URL('../src/components/data/CrudModal.tsx', import.meta.url), 'utf8');
+  assert.match(source, /export type CrudIntent = 'create' \| 'edit'/);
+  assert.match(source, /intent\?: CrudIntent/);
+  assert.match(source, /intent \? intent === 'edit'/);
+  assert.match(source, /legacy callers/i);
+});
+
+test('Several thousand rows remain uniquely addressable', () => {
+  const seed = seedModule(modules[0]);
+  const rows = Array.from({ length: 5000 }, (_, i) => ({
+    ...seed[i % seed.length],
+    id: `stress-${i}`,
+  }));
+  assert.equal(new Set(rows.map((r) => r.id)).size, 5000);
+  assert.equal(rows.filter((r) => r.id.includes('stress-49')).length, 111);
+});
+
 test('Every module has unique seed IDs, valid statuses and required fields', () => {
   assert.equal(modules.length, 13);
   for (const module of modules) {
@@ -195,16 +227,6 @@ test('Journal, transfer, invoice, and duplicate constraints', () => {
   const row = { id: '1', name: 'Example', status: 'Active' };
   assert.match(validateRecord('products', { name: ' example ' }, [row]), /already exists/);
   assert.equal(validateRecord('products', { name: 'Example' }, [row], '1'), undefined);
-});
-
-test('Several thousand rows remain uniquely addressable', () => {
-  const seed = seedModule(modules[0]);
-  const rows = Array.from({ length: 5000 }, (_, i) => ({
-    ...seed[i % seed.length],
-    id: `stress-${i}`,
-  }));
-  assert.equal(new Set(rows.map((r) => r.id)).size, 5000);
-  assert.equal(rows.filter((r) => r.id.includes('stress-49')).length, 111);
 });
 
 test('ERP routes use domain floorplans instead of one CRUD floorplan', () => {
