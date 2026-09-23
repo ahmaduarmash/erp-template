@@ -42,7 +42,7 @@ test('Malformed preferences preserve a renderable configuration', () => {
     assert.deepEqual(resolveConfig(input), templateConfig);
   const config = resolveConfig({
     theme: { primaryColor: 'url(evil)', mode: 'bad', borderRadius: 1000 },
-    brand: { name: 'stale' },
+    brand: { name: 42, logoUrl: 'javascript:alert(1)' },
     typography: { fontFamily: 'Not installed' },
     sound: { enabled: 'yes', volume: -5 },
     table: { defaultPageSize: Infinity, hiddenColumns: [1, 'status'] },
@@ -53,6 +53,7 @@ test('Malformed preferences preserve a renderable configuration', () => {
   assert.equal(config.sound.volume, 0);
   assert.equal(config.sound.enabled, false);
   assert.equal(config.brand.name, templateConfig.brand.name);
+  assert.equal(config.brand.logoUrl, templateConfig.brand.logoUrl);
   assert.deepEqual(config.table.hiddenColumns, ['status']);
 });
 
