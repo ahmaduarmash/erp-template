@@ -171,7 +171,7 @@ A phase is complete only when its exit criteria pass and validation is recorded.
 | 4 | Core Visual Primitives | [x] |
 | 5 | Overlay & Interaction Architecture | [x] |
 | 6 | Enterprise Data Workspace | [x] |
-| 7 | Workflow / Approval System | [ ] |
+| 7 | Workflow / Approval System | [x] |
 | 8 | Settings & Live Theme Studio | [ ] |
 | 9 | ERP Floorplan / Module Migration | [ ] |
 | 10 | QA, Accessibility & Design-System Enforcement | [ ] |
@@ -523,20 +523,20 @@ Create a reusable workflow floorplan for routed reviews/approvals without coupli
 
 ## Target capabilities
 
-- [ ] Workflow status model (draft/pending/forwarded/approved/rejected/settled or domain-mapped equivalents)
-- [ ] Approval route/timeline primitive
-- [ ] Current-stage emphasis
-- [ ] Actor/role/context display
-- [ ] Decision history / audit trail
-- [ ] `ApprovalDrawer` real-screen integration
-- [ ] Approve / reject / forward / pull-to-desk action composition
-- [ ] Mandatory-reason support for destructive or exception decisions
-- [ ] Contextual confirmations where appropriate
-- [ ] Permission-aware action visibility contract
-- [ ] Empty/loading/error behavior
-- [ ] Fast state-change motion without decorative timeline animation
-- [ ] Responsive drawer/workspace behavior
-- [ ] Tests for workflow state transitions and action visibility
+- [x] Workflow status model (draft/pending/forwarded/approved/rejected/settled or domain-mapped equivalents)
+- [x] Approval route/timeline primitive
+- [x] Current-stage emphasis
+- [x] Actor/role/context display
+- [x] Decision history / audit trail
+- [x] `ApprovalDrawer` real-screen integration
+- [x] Approve / reject / forward / pull-to-desk action composition
+- [x] Mandatory-reason support for destructive or exception decisions
+- [x] Contextual confirmations where appropriate
+- [x] Permission-aware action visibility contract
+- [x] Empty/loading/error behavior
+- [x] Fast state-change motion without decorative timeline animation
+- [x] Responsive drawer/workspace behavior
+- [x] Tests for workflow state transitions and action visibility
 
 ## UX rules
 
@@ -546,11 +546,42 @@ Create a reusable workflow floorplan for routed reviews/approvals without coupli
 - Approval actions belong in the review drawer unless the domain requires a full document workspace.
 - A user should be able to review, decide, close, and continue the originating list without losing context.
 
+## Architecture decision
+
+Workflow domain state is separated from the presentation layer. `src/workflow/model.ts` owns normalized statuses, legal transitions, permission filtering, and persisted audit-history parsing/serialization. Shared workflow UI consumes that contract rather than encoding expense-specific transition rules.
+
+`Expenses` is the real-screen validation target because it is already a review/approval domain and can prove the list → review drawer → decision pattern without forcing a complex document redesign. Existing demo records remain backward compatible: when no persisted workflow history exists, the screen derives a safe initial route/history from the existing record status. New decisions persist `workflowOwner` and serialized `workflowHistory` through the existing demo repository boundary; production projects can replace that persistence with an API-backed workflow adapter without changing the interaction floorplan.
+
+## Implementation record — 2026-09-23
+
+- Added `src/workflow/model.ts` with normalized `draft`, `pending`, `forwarded`, `approved`, `rejected`, and `settled` states plus guarded transitions for submit, claim, forward, return, approve, reject, and settle.
+- Hardened `src/components/workflow/` into reusable route, summary, audit-trail, and decision primitives with loading/error/empty states.
+- Added current-stage emphasis with semantic text and `aria-current`; state meaning does not depend on color alone.
+- Added actor/role/context and chronological decision history with recorded reasons.
+- Moved mandatory rejection/return reasons into a contextual animated popover; empty reasons cannot be submitted.
+- Permission-aware decisions delegate to the existing `auth.can()` contract instead of inventing a workflow-specific permission engine.
+- Fixed a confirmation-path defect discovered during integration: confirm-wrapped workflow actions no longer execute on the initiating button click; they execute only after the contextual confirmation is accepted.
+- Migrated Expenses from direct table mutations to a review-first `ApprovalDrawer`; record evidence and workflow context appear before footer decision controls.
+- Added centered `CreateModal` expense submission, preserving the interaction matrix for small/medium creation.
+- Added pull-to-desk ownership, forward/return routing, approval/rejection, settlement, persisted owner/history, and safe compatibility history for existing seeded records.
+- Workflow styling remains token-driven, responsive, gradient-free, and without decorative timeline animation; overlay motion continues to use Phase 2 runtime/reduced-motion behavior.
+- Added `tests/workflow.test.mjs` covering state transitions, permission-aware visibility, audit-history recovery, shared primitive contracts, Expense integration, and workflow CSS enforcement.
+
+## Validation
+
+- Local isolated workflow-model TypeScript check passed before repository write.
+- `Validate starter` run **35847480072**: `npm test` and `npm run build` passed.
+- `Deploy v2.0 preview` run **35847480106**: tests, preview build, artifact upload, and GitHub Pages deployment passed.
+
 ## Exit criteria
 
-A reusable workflow screen can express a routed decision, show its audit context, and complete a decision without inventing a module-specific interaction system.
+- [x] A reusable workflow screen expresses routed decisions and current responsibility without module-specific overlay behavior.
+- [x] Audit context, actor, status, current stage, and decision reasons are visible in the review flow.
+- [x] Decisions can be completed without losing the originating list context.
+- [x] Permission filtering, transition legality, loading/error/empty states, responsive behavior, and confirmation semantics are covered.
+- [x] CI and Pages gate pass.
 
-**Status: [ ] Not started.**
+**Status: [x] Complete.**
 
 ---
 
@@ -734,11 +765,12 @@ As the design system replaces earlier experimental work:
 - prefer evolution of good existing architecture over rewrites,
 - document architecture changes that alter the original implementation path.
 
-Known migration debt after Phase 6:
+Known migration debt after Phase 7:
 
-- `DataTable` and `DomainTable` still exist for legacy pages; they should delegate to or be retired in favor of the enterprise data-workspace contract during Phase 9.
+- `DataTable` and `DomainTable` still exist for legacy pages; they should delegate to or be retired in favor of the enterprise data-workspace contract during Phase 9. Expenses intentionally retains the existing `DomainTable` list shell while Phase 7 validates workflow behavior rather than table migration.
 - Compatibility CSS aliases remain until affected feature styles are migrated.
 - Generic `ModulePage` remains a compatibility route path for modules that have not yet received their final floorplan; it is not the target architecture for complex ERP documents.
+- Workflow history/ownership currently persist inside demo records so the starter remains self-contained; API-backed projects should map the same model to authoritative server workflow/audit data.
 
 ---
 
@@ -766,21 +798,32 @@ Runtime tokens, motion/feedback, enterprise shell, and shared visual primitives 
 - Migrated Products as the validation screen while preserving its domain-specific KPI, stock, drawer, and modal UX.
 - Added contract tests and verified CI + Pages deployment.
 
+### 2026-09-23 — Phase 7 completed
+
+- Audited the existing workflow primitives before adding new architecture; reused the Phase 5 `ApprovalDrawer` and Phase 2 animated overlays.
+- Added an explicit workflow state/transition model and safe audit-history persistence contract.
+- Hardened route/timeline, audit trail, decision visibility, reason capture, confirmation, and resilient UI states.
+- Migrated Expenses from direct table decisions to a review-first right-side drawer while preserving list context.
+- Added pull-to-desk, forward/return, approve/reject, and settlement behavior with permission-aware visibility.
+- Fixed a confirmation action path that could otherwise fire before the user confirmed.
+- Added workflow contract/state tests and verified full CI + Pages deployment.
+
 ---
 
 ## 11. Immediate Next Stage
 
-**Next: Phase 7 — Workflow / Approval System.**
+**Next: Phase 8 — Settings & Live Theme Studio.**
 
 Before implementation:
 
-1. inspect existing workflow/approval/review screens and any status/timeline helpers,
-2. identify reusable route/status/audit models already present,
-3. choose the best real-screen validation target,
-4. reuse `ApprovalDrawer`, `ObjectHeader`, `StatusPill`, `CommandBar`, and Phase 2 motion,
-5. keep workflow state/domain rules separate from visual primitives,
-6. add tests for state mapping and action visibility,
-7. validate through CI and Pages before marking Phase 7 complete.
+1. inspect the current Settings screen, `ThemeProvider`, runtime config schema, persistence adapter, and any existing settings controls,
+2. compare current controls against every Phase 8 target section before adding UI,
+3. preserve the existing token/config engine as the single source of truth—do not create a second theme model,
+4. identify stale/duplicated settings CSS or controls that should be consolidated into shared primitives,
+5. make all supported changes apply live without rebuild/reload,
+6. expose effective reduced-motion policy and keep sound/table preferences inside the same resolved settings model,
+7. add focused tests for live settings application and safe reset/recovery,
+8. validate light/dark, compact/comfortable, fast/normal motion, CI, and Pages before marking Phase 8 complete.
 
 ---
 
