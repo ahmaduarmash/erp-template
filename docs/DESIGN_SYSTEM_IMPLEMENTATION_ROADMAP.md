@@ -3,378 +3,113 @@
 > **Status:** Active implementation document  
 > **Branch:** `v2.0`  
 > **Last reviewed:** 2026-09-23  
-> **Purpose:** Living implementation plan for evolving `erp-template` into a highly polished, runtime-customizable, enterprise-grade SaaS/ERP design system and workspace shell.
+> **Purpose:** Living implementation plan for evolving `erp-template` into a polished, runtime-customizable, production-grade SaaS/ERP design system and workspace shell.
 
 ---
 
-## 1. Goal
+## 1. Product Goal
 
-The target is **not** to copy any reference product visually. The goal is to adopt the strongest interaction and product-design principles observed in the reference material while keeping this starter brand-neutral, reusable, runtime-themeable, and suitable for many ERP/SaaS products.
+The target is not a replica of any reference interface. The target is a reusable enterprise product language that borrows proven interaction principles while remaining brand-neutral, configurable at runtime, maintainable, accessible, and suitable for multiple ERP/SaaS products.
 
-The finished system should feel:
+The finished starter must feel:
 
 - professional rather than decorative,
 - fast rather than animated for animation's sake,
 - information-dense without feeling cramped,
-- visually calm but not flat or lifeless,
+- visually calm but not flat,
 - domain-aware rather than generic CRUD,
-- highly customizable without rebuilds or page reloads,
-- consistent across all modules while allowing each business workflow to behave differently.
+- highly customizable without rebuilds or reloads,
+- consistent across modules while allowing each business workflow to behave correctly.
 
-The core product principle is:
+Core product principle:
 
 > **Every page should look like it belongs to the same product, while behaving like the business object it represents.**
 
 ---
 
-# 2. Design System Constitution
+## 2. Design System Constitution
 
-These are non-negotiable product rules for the implementation.
+These rules are non-negotiable unless a later implementation decision is explicitly documented here.
 
-1. **Stable shell, dynamic workspace.**
-2. **Neutral base UI, semantic color.**
-3. **No decorative gradients.** Depth comes from solid surfaces, borders, and controlled elevation.
-4. **All theme-sensitive values come from runtime design tokens.**
-5. **Icons live inside meaningful affordances; decorative icon noise is avoided.**
-6. **Create/edit small records = focused modal.**
-7. **Inspect/review existing records = right-side drawer.**
-8. **Complex transactions = full document workspace.**
-9. **Confirmation happens as close as possible to the initiating action.**
-10. **Overlay exits are always faster than entries.**
-11. **Motion explains change; it does not decorate the UI.**
-12. **Users should not lose table/filter context just to inspect a record.**
-13. **One runtime token system controls CSS, Tailwind utilities, and Ant Design.**
-14. **Feature-specific components must consume shared primitives rather than invent visual rules.**
-15. **Dark mode hierarchy must not depend on heavy shadows.**
-16. **Professional density comes from hierarchy and spacing discipline, not oversized controls.**
-17. **Frequent row actions are icon-first; overflow actions use icon + text.**
-18. **Color communicates identity, state, category, or risk—never random decoration.**
-
----
-
-# 3. Current Baseline
-
-`v2.0` already contains useful foundations that should be evolved rather than discarded:
-
-- React 19 + Vite + TypeScript
-- Ant Design v5
-- Tailwind CSS v4
-- `motion` / Motion for React
-- runtime `TemplateConfig`
-- `ThemeProvider`
-- light/dark/system support
-- configurable primary/accent colors
-- configurable font, density, radius, content width
-- motion and sound settings
-- settings persistence
-- workspace tab concept
-- route registry
-- domain-specific ERP workspaces
-- ERP primitives
-- auth/repository boundaries
-- GitHub Pages preview
-
-The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations. Phase 2 established the centralized contract for motion and feedback. Phase 3 established the scalable enterprise workspace shell and removed the old competing single-sidebar implementation. Phase 4 now establishes a shared visual vocabulary while preserving compatibility APIs for already-built ERP modules.
+1. Stable shell, dynamic workspace.
+2. Neutral base UI, semantic color.
+3. No decorative gradients. Depth comes from solid surfaces, borders, and controlled elevation.
+4. Theme-sensitive values come from runtime design tokens.
+5. Icons live inside meaningful affordances; decorative icon noise is avoided.
+6. Small/medium create and edit flows use focused centered modals.
+7. Inspect/review existing records uses right-side drawers.
+8. Complex transactions use dedicated full-page document workspaces.
+9. Confirmation happens as close as possible to the initiating action.
+10. Overlay exits are faster than entries.
+11. Motion explains change; it does not decorate the interface.
+12. Users should not lose list/filter context simply to inspect a record.
+13. One runtime token system controls CSS, Tailwind utilities, and Ant Design.
+14. Feature components consume shared primitives instead of inventing visual rules.
+15. Dark-mode hierarchy does not depend on heavy shadows.
+16. Professional density comes from hierarchy and spacing discipline, not oversized controls.
+17. Frequent row actions are icon-first; uncommon actions live in an overflow menu with icon + text.
+18. Color communicates identity, state, category, or risk—never random decoration.
+19. Domain behavior determines screen structure; one generic CRUD floorplan must not replace accounting, purchasing, inventory, workflow, or hierarchy UX.
+20. CI is an implementation gate. Major phases must not be stacked on a knowingly failing build.
 
 ---
 
-# 4. Architecture Target
+## 3. Architecture Target
 
-The final theme flow should be:
+The theme/design flow remains:
 
 ```text
 Project defaults
 (template.config.ts)
         ↓
 User preferences
-(localStorage now / backend later)
+(local persistence now / backend later)
         ↓
-resolveTheme()
+resolved runtime configuration
         ↓
-Primitive design tokens
+Primitive tokens
         ↓
-Semantic design tokens
+Semantic tokens
         ↓
-Component tokens
+Component/layout/motion tokens
         ↓
 ┌────────────────┬────────────────┬────────────────┐
 │ CSS variables  │ AntD theme     │ Tailwind v4    │
 │ runtime        │ ConfigProvider │ @theme inline  │
 └────────────────┴────────────────┴────────────────┘
         ↓
-Shared UI primitives
+Shared primitives and interaction surfaces
         ↓
-ERP floorplans
+Reusable ERP floorplans
         ↓
 Domain modules
 ```
 
-No feature should directly define its own brand colors, motion speeds, spacing system, radius system, or elevation logic.
+Existing reusable foundations such as `template.config.ts`, `ThemeProvider`, route registry, repository boundaries, and domain workspaces should be evolved rather than rewritten without evidence.
 
 ---
 
-# 5. Progress Tracking Rules
+## 4. Interaction Decision Matrix
 
-Each phase has one of these statuses:
+| Intent | Default surface |
+| --- | --- |
+| Create a small/medium record | Centered modal |
+| Edit a small/medium record | Centered modal |
+| Inspect an existing record | Right-side drawer |
+| Review / approval | Right-side drawer with workflow context |
+| Small destructive/important confirmation | Contextual popover near the action |
+| Complex business document | Dedicated full-page document workspace |
+| Complex configuration / hierarchy | Dedicated workspace or tree/detail floorplan |
 
-- `[ ]` Not started
-- `[-]` In progress
-- `[x]` Complete
-- `[!]` Blocked / needs decision
+Complex-document examples include Journal Entry, Purchase Order, Sales Invoice, Stock Transfer, and complex payment allocation.
 
-A phase is only complete when its **Exit Criteria** pass.
-
-We should implement phases sequentially unless a later item is explicitly independent.
-
----
-
-# 6. Phase Overview
-
-| Phase | Area | Status |
-| --- | --- | --- |
-| 1 | Runtime Design Token Engine | [x] |
-| 2 | Motion & Feedback Engine | [x] |
-| 3 | Enterprise Workspace Shell | [x] |
-| 4 | Core Visual Primitives | [x] |
-| 5 | Overlay & Interaction Architecture | [ ] |
-| 6 | Enterprise Data Workspace | [ ] |
-| 7 | Workflow / Approval System | [ ] |
-| 8 | Settings & Live Theme Studio | [ ] |
-| 9 | ERP Floorplan / Module Migration | [ ] |
-| 10 | QA, Accessibility & Design-System Enforcement | [ ] |
+Do not stack a generic edit modal over a detail drawer unless a domain case explicitly requires it. Prefer closing the inspection drawer and opening the edit modal while preserving the underlying list/query context.
 
 ---
 
-# 7. Phase 1 — Runtime Design Token Engine
+## 5. Motion Contract
 
-## Objective
-
-Make the theme engine the single source of truth before doing more screen-specific styling.
-
-## 7.1 Primitive token families
-
-### Color
-
-Create runtime-generated scales for:
-
-- `primary-50` → `primary-900`
-- `accent-50` → `accent-900`
-- neutral scale
-- success
-- warning
-- danger
-- info
-- category accents
-
-Primary and accent scales must be generated from the user's selected colors.
-
-### Semantic color
-
-Components should use semantic roles rather than palette values directly:
-
-```text
---bg-base
---bg-surface
---bg-subtle
---bg-elevated
---bg-selected
---text-primary
---text-secondary
---text-muted
---text-disabled
---border-default
---border-strong
---border-subtle
---action-primary
---action-primary-hover
---action-primary-active
---focus-ring
---selection-bg
-```
-
-### Radius
-
-One runtime radius setting should derive:
-
-```text
---radius-sm
---radius-md
---radius-lg
---radius-xl
---radius-control
---radius-card
---radius-overlay
-```
-
-### Spacing / density
-
-Introduce one density-aware base unit and derive the full spacing scale:
-
-```text
---spacing-unit
---space-1
---space-2
---space-3
---space-4
---space-5
---space-6
---space-8
---space-12
-```
-
-Density target:
-
-- Compact
-- Comfortable
-
-`spacious` should be removed from user-facing settings unless a later product requirement justifies it.
-
-### Typography
-
-Runtime typography tokens:
-
-```text
---font-family
---font-scale
---text-xs
---text-sm
---text-md
---text-lg
---text-xl
---heading-sm
---heading-md
---heading-lg
---stat-sm
---stat-md
---stat-lg
---line-height-tight
---line-height-normal
-```
-
-Stat values use `font-variant-numeric: tabular-nums`.
-
-Micro-labels remain uppercase and tracking-wide but scale with global text size.
-
-### Elevation
-
-Define mode-aware elevation:
-
-```text
---elevation-xs
---elevation-sm
---elevation-md
---elevation-lg
-```
-
-Light mode:
-
-- soft shadows,
-- restrained alpha,
-- no dramatic floating cards.
-
-Dark mode:
-
-- little or no traditional dark shadow,
-- stronger borders,
-- subtle inner highlight / border-lightening,
-- optional tiny soft glow only when needed for overlays.
-
-### Layout tokens
-
-Introduce:
-
-```text
---rail-width
---secondary-nav-width
---header-height
---tabbar-height
---content-max-width
---control-height
---table-row-height
---drawer-width-sm
---drawer-width-md
---drawer-width-lg
-```
-
-## 7.2 Tailwind integration
-
-Tailwind v4 should consume runtime CSS custom properties through `@theme inline`.
-
-No hardcoded theme hex/radius/spacing values should be needed inside feature components.
-
-## 7.3 Ant Design integration
-
-AntD `ConfigProvider` must consume the same resolved tokens used by CSS/Tailwind.
-
-Avoid maintaining a separate visual system for Ant components.
-
-## 7.4 Cleanup
-
-- remove all decorative gradients,
-- migrate reusable values out of feature CSS,
-- reduce visual-system duplication across `styles.css`, `erp.css`, `design-v2.css`, `coa-v2.css`, `journal-v2.css`, etc.,
-- keep feature CSS only when it describes unique feature layout rather than theme decisions.
-
-## 7.5 Tasks
-
-- [x] Define token type model
-- [x] Build shade-scale generator
-- [x] Build semantic light theme mapping
-- [x] Build semantic dark theme mapping
-- [x] Build spacing/density derivation
-- [x] Build radius derivation
-- [x] Build typography derivation
-- [x] Build elevation derivation
-- [x] Build layout derivation
-- [x] Update `ThemeProvider`
-- [x] Update `resolveConfig`
-- [x] Map tokens to AntD
-- [x] Map tokens to Tailwind
-- [x] Remove decorative gradients
-- [x] Remove raw theme colors from shared CSS
-- [x] Add token unit tests
-
-## Implementation record — 2026-09-23
-
-- Added `src/theme/tokens/palette.ts`, `semantic.ts`, `foundations.ts`, and `index.ts` as the runtime token resolver.
-- Added runtime CSS-variable emission and `src/theme/tokens/tailwind.css`; Ant Design `ConfigProvider`, Tailwind aliases, and plain CSS now consume the same resolved token object.
-- Removed the user-facing/internal AntD algorithm setting. Theme mode is now strictly Light/Dark/System.
-- Removed `spacious` from the supported density contract; persisted legacy `spacious` preferences migrate safely to `comfortable`.
-- Preserved legacy CSS variable names as compatibility aliases so existing modules can migrate incrementally without creating a risky whole-app rewrite. New work should use semantic/runtime tokens directly.
-- Reworked `design-v2.css`, `coa-v2.css`, and `journal-v2.css` to remove decorative gradients and move theme decisions to runtime tokens while preserving domain layout behavior.
-- Removed remaining raw theme hex values from shared runtime CSS and added an automated guard that fails tests if decorative gradients or raw hex theme colors return.
-- Added palette, token resolver, legacy preference migration, light/dark, density/radius/type/layout/elevation, and CSS constitution tests.
-- Validation: GitHub Actions `npm test` and `npm run build` pass on `v2.0`; GitHub Pages preview build also passes for the Phase 1 head.
-- Technical debt intentionally deferred: existing shell/module layout values that are not theme decisions remain in their current CSS until their scheduled Phase 3/9 migrations.
-
-## Exit Criteria
-
-Phase 1 is complete only when changing these settings updates the real application instantly without reload:
-
-- primary color
-- accent color
-- light/dark/system
-- font family
-- text size
-- density
-- radius
-- content width
-
-And the application contains no decorative gradient backgrounds.
-
-**Status: [x] Complete — exit criteria validated through the runtime resolver, live settings wiring, CSS constitution tests, production build, and preview build.**
-
----
-
-# 8. Phase 2 — Motion & Feedback Engine
-
-## Objective
-
-Create one motion language for the entire product.
-
-## 8.1 Duration matrix
-
-Both speed tiers should already feel fast.
+Motion must feel fast at both supported speed tiers.
 
 | Interaction | Fast | Normal |
 | --- | ---: | ---: |
@@ -386,331 +121,218 @@ Both speed tiers should already feel fast.
 
 Rules:
 
-- exit is always faster than entry,
-- avoid 300ms+ transitions for standard UI,
-- page-level special reveals should rarely exceed 250ms,
-- reduced motion disables non-essential animation,
-- normal speed is not a slow fallback.
+- exit is faster than entry,
+- avoid routine 300–500ms UI animation,
+- use high-stiffness/high-damping springs with minimal overshoot,
+- respect OS `prefers-reduced-motion`,
+- runtime Motion Speed affects the application live,
+- normal filtering, paging, or refresh must not replay decorative row staggers.
 
-## 8.2 Easing / spring
-
-Default entry easing:
-
-```text
-cubic-bezier(0.16, 1, 0.3, 1)
-```
-
-Exit:
-
-```text
-ease-in
-```
-
-Spring:
+Default spring contract:
 
 ```ts
 { stiffness: 500, damping: 35 }
 ```
 
-Minimal overshoot only.
+---
 
-## 8.3 Shared motion API
+## 6. ERP Floorplan Vocabulary
 
-Target API:
+The application has one visual language and several reusable floorplans:
 
-```text
-useMotionTokens()
-  micro
-  standard
-  page
-  modalEnter
-  modalExit
-  drawerEnter
-  drawerExit
-  spring
-```
+- **Master List** — products, customers, suppliers, employees, warehouses.
+- **Master + Detail** — list context with an inspection drawer.
+- **Tree Workspace** — Chart of Accounts and other hierarchies.
+- **Analytical Workspace** — stock levels, dashboards, derived read-heavy data.
+- **Document Workspace** — journal entries, purchase orders, invoices, transfers.
+- **Approval / Workflow Workspace** — routed decisions and audit trails.
+- **Security Workspace** — users, roles, permissions, access policy.
 
-## 8.4 Reusable animated surfaces
+A Purchase Order must feel like purchasing software. A Journal Entry must feel like accounting software. Chart of Accounts must behave like a hierarchy. Stock Levels must behave like derived inventory data.
 
+---
+
+## 7. Progress Tracking
+
+Statuses:
+
+- `[ ]` not started
+- `[-]` in progress
+- `[x]` complete
+- `[!]` blocked / decision required
+
+A phase is complete only when its exit criteria pass and validation is recorded.
+
+| Phase | Area | Status |
+| --- | --- | --- |
+| 1 | Runtime Design Token Engine | [x] |
+| 2 | Motion & Feedback Engine | [x] |
+| 3 | Enterprise Workspace Shell | [x] |
+| 4 | Core Visual Primitives | [x] |
+| 5 | Overlay & Interaction Architecture | [x] |
+| 6 | Enterprise Data Workspace | [x] |
+| 7 | Workflow / Approval System | [ ] |
+| 8 | Settings & Live Theme Studio | [ ] |
+| 9 | ERP Floorplan / Module Migration | [ ] |
+| 10 | QA, Accessibility & Design-System Enforcement | [ ] |
+
+---
+
+# Phase 1 — Runtime Design Token Engine
+
+## Objective
+
+Make the runtime theme engine the single source of truth before further screen-specific styling.
+
+## Required token families
+
+- generated primary and accent shade scales,
+- neutral + success/warning/danger/info/category palettes,
+- semantic background/text/border/action/focus roles,
+- density-aware spacing scale,
+- runtime radius scale,
+- runtime typography scale,
+- light/dark elevation strategy,
+- layout dimensions for rail/nav/header/tabs/content/controls/tables/drawers.
+
+## Completed work
+
+- [x] Token type model
+- [x] Shade-scale generator
+- [x] Semantic light mapping
+- [x] Semantic dark mapping
+- [x] Spacing/density derivation
+- [x] Radius derivation
+- [x] Typography derivation
+- [x] Elevation derivation
+- [x] Layout derivation
+- [x] ThemeProvider integration
+- [x] `resolveConfig` integration
+- [x] AntD mapping
+- [x] Tailwind v4 mapping
+- [x] Decorative gradient removal
+- [x] Shared CSS raw-theme-color cleanup
+- [x] Token tests
+
+## Implementation record — 2026-09-23
+
+- Runtime token resolver lives under `src/theme/tokens/` and emits the CSS variables consumed by CSS, Tailwind, and Ant Design.
+- Primary/accent scales derive from runtime-selected colors.
+- Light/Dark/System is the supported mode contract.
+- User-facing `spacious` density was removed; legacy stored `spacious` values migrate to `comfortable`.
+- Compatibility CSS aliases remain only to support incremental migration of older modules.
+- Shared CSS has automated guards against decorative gradients and raw theme hex values.
+- Existing feature CSS may retain domain layout rules but not a separate theme system.
+
+## Exit criteria
+
+- [x] Primary/accent/mode/font/text-size/density/radius/content-width changes apply at runtime.
+- [x] No decorative gradient backgrounds in shared runtime styling.
+- [x] Tests and production build pass.
+
+**Status: [x] Complete.**
+
+---
+
+# Phase 2 — Motion & Feedback Engine
+
+## Objective
+
+Create one motion/feedback language for the product.
+
+## Completed work
+
+- [x] Runtime motion timing matrices
+- [x] `useMotionTokens()`
 - [x] `AnimatedModal`
 - [x] `AnimatedDrawer`
 - [x] `AnimatedPopover`
 - [x] `AnimatedDropdown`
 - [x] `PageTransition`
 - [x] `TabTransition`
-- [x] standardized press interaction
-- [x] list insertion/removal transition
-- [x] reduced-motion support
-
-## 8.5 Motion philosophy
-
-Animate:
-
-- opening/closing context,
-- active tab changes,
-- workflow state changes,
-- row insertion/removal,
-- menu/popover changes,
-- success/error feedback.
-
-Do not animate:
-
-- cards continuously floating,
-- arbitrary icon spinning,
-- permanent decorative movement,
-- repeated number animation on every refresh,
-- large table stagger on every state update.
-
-## 8.6 Sound
-
-Sound remains intentionally subtle:
-
-- master on/off,
-- low volume,
-- click,
-- success,
-- warning,
-- notification,
-- no game-like sounds,
-- short synthesized feedback,
-- no audio assets.
-
-Default sound behavior can be finalized during this phase.
+- [x] restrained press interaction
+- [x] insertion/removal transition support
+- [x] OS reduced-motion veto
+- [x] runtime Motion Speed integration
+- [x] subtle synthesized Web Audio feedback retained without audio assets
 
 ## Implementation record — 2026-09-23
 
-- Added `src/theme/tokens/motion.ts` with Fast/Normal interaction-specific timing matrices, shared entry/exit easing, and the `{ stiffness: 500, damping: 35 }` spring contract.
-- Motion tokens are resolved with the rest of the runtime theme and emitted as CSS variables (`--motion-micro`, `--motion-standard`, page/modal/drawer enter/exit values and easing variables).
-- `ThemeProvider` now owns OS `prefers-reduced-motion` state. OS reduced motion is a hard veto, and the effective value is shared by Motion for React, CSS, and Ant Design motion configuration.
-- Added `useMotionTokens()` as the primary runtime motion API. The older `useMotionPolicy()` remains only as a compatibility bridge while older code is migrated.
-- Added reusable `AnimatedModal`, `AnimatedDrawer`, `AnimatedPopover`, and `AnimatedDropdown` surfaces in `src/lib/motion/overlays.tsx`.
-- Added `PageTransition`, `TabTransition`, and `ListTransition` in `src/lib/motion/transitions.tsx`; route content now uses the shared page transition.
-- Modal and drawer transitions are intentionally distinct: centered modals use a subtle opacity/vertical/scale change, while drawers preserve right-side spatial context. Both use faster exits than entries.
-- Existing generic CRUD modal/drawer shells now consume the shared animated overlay primitives instead of implementing local motion behavior.
-- Retained delegated button press handling to avoid per-cell listeners, reduced its scale response to a restrained `0.985`, and tied duration/easing to runtime motion tokens.
-- Removed the legacy routine table-row stagger animation. Normal filtering, paging and refreshes no longer replay decorative row animation.
-- Added `src/theme/motion.css`, loaded after compatibility CSS, so effective shared CSS transition timing follows runtime motion tokens. COA-specific transitions were migrated away from local millisecond constants.
-- Existing synthesized Web Audio feedback was audited and retained: sound defaults off, volume remains low, categories are click/success/warning/notification, and no audio assets are introduced.
-- Added automated motion-matrix and runtime CSS/reduced-motion contract tests.
-- Validation: GitHub Actions `npm test` and `npm run build` pass on the Phase 2 code head; the GitHub Pages preview build also passes and deploys through the existing `v2.0` workflow.
-- Scope boundary: Phase 2 did not redesign the workspace shell. Phase 3 remained untouched apart from wiring the existing route outlet through the reusable page-transition primitive.
+- Motion tokens are resolved through the same runtime theme system and emitted as CSS variables.
+- AntD motion, Motion for React, and CSS transitions share the effective reduced-motion state.
+- Modal and drawer transitions are intentionally distinct while sharing timing policy.
+- Routine table-row stagger animation was removed.
+- Existing sound defaults remain subtle and opt-in/low-volume.
 
-## Exit Criteria
+## Exit criteria
 
-- no feature defines its own duration constants,
-- overlays enter and exit consistently,
-- normal motion feels fast,
-- OS reduced-motion is respected,
-- button interactions feel tactile but not bouncy.
+- [x] Shared motion timing; feature code does not invent routine durations.
+- [x] Consistent overlay enter/exit behavior.
+- [x] Normal mode feels fast.
+- [x] OS reduced-motion respected.
+- [x] Button feedback tactile without bounce-heavy motion.
 
-**Status: [x] Complete — runtime motion is centralized, overlays use shared enter/exit behavior, OS reduced-motion is enforced, routine decorative table stagger was removed, press feedback is restrained, tests/build pass, and the preview workflow builds successfully.**
+**Status: [x] Complete.**
 
 ---
 
-# 9. Phase 3 — Enterprise Workspace Shell
+# Phase 3 — Enterprise Workspace Shell
 
 ## Objective
 
-Replace the conventional single-sidebar feeling with a scalable enterprise workspace shell.
+Provide a stable, scalable ERP shell capable of supporting many modules without becoming visually noisy.
 
-## 9.1 Target layout
-
-```text
-┌────────┬──────────────────────┬──────────────────────────────┐
-│ Rail   │ Secondary nav        │ Global header                │
-│        │                      ├──────────────────────────────┤
-│        │                      │ Workspace tab bar            │
-│        │                      ├──────────────────────────────┤
-│        │                      │                              │
-│        │                      │ Current workspace            │
-│        │                      │                              │
-└────────┴──────────────────────┴──────────────────────────────┘
-```
-
-## 9.2 Primary rail
-
-Purpose: answer "Which major business area am I in?"
-
-Potential categories:
-
-- Overview
-- Inventory
-- Purchasing
-- Sales
-- Accounting
-- Organization
-- System
-
-Patterns:
-
-- icon-only,
-- circular/tinted action targets,
-- tooltip on hover,
-- selected domain visually obvious,
-- no noisy labels.
-
-## 9.3 Secondary navigation
-
-Purpose: answer "What can I do inside this business area?"
-
-Each navigation item supports:
-
-- icon,
-- title,
-- one-line description,
-- active left accent,
-- subtle selected tint.
-
-Example:
+## Required shell anatomy
 
 ```text
-Accounting
-Financial control & reporting
-
-Chart of accounts
-Ledger hierarchy
-
-Journal entries
-Manual accounting documents
-
-Sales invoices
-Receivables & billing
+App shell
+├── Business-area rail
+├── Secondary navigation
+├── Workspace header
+├── Workspace tabs
+└── Route workspace
 ```
 
-## 9.4 Route registry enrichment
+## Completed work
 
-Route metadata should support:
+- [x] Business-area rail
+- [x] Secondary navigation by selected area
+- [x] Compact workspace header
+- [x] Global search trigger / command affordance
+- [x] Runtime theme/reduced-motion-aware shell behavior
+- [x] Workspace tabs
+- [x] Route-driven title/description/icon metadata
+- [x] Responsive collapse behavior
+- [x] Token-driven shell dimensions
+- [x] Removal of competing legacy shell implementation
 
-```text
-title
-description
-icon
-group
-path
-permission
-pageKind
-```
+## Exit criteria
 
-## 9.5 Header
+- [x] Shell scales to many ERP modules.
+- [x] Current location is unambiguous.
+- [x] Navigation groups remain domain-oriented.
+- [x] No second page-specific shell system.
 
-Keep and refine existing behaviors:
-
-- page/domain context,
-- global search,
-- color mode action,
-- notifications,
-- user/profile menu.
-
-## 9.6 Workspace tab bar
-
-Improve existing tabs into a real persistent workspace pattern:
-
-- route icon,
-- title,
-- close button,
-- selected-state line/tint,
-- horizontal overflow,
-- predictable close behavior,
-- restore last active tabs where appropriate,
-- fast 100–150ms transition.
-
-## Tasks
-
-- [x] Build primary rail
-- [x] Build secondary nav
-- [x] Enrich route registry
-- [x] Rebuild shell grid using layout tokens
-- [x] Refine header
-- [x] Upgrade tab bar
-- [x] Responsive collapse rules
-- [x] Mobile navigation behavior
-- [x] Keyboard/focus navigation
-
-## Implementation record — 2026-09-23
-
-- Enriched `src/config/routes.ts` so every workspace route owns its title, description, icon, business-area group, path, permission, and page-kind metadata. Added explicit business-area metadata for Overview, Inventory, Purchasing, Sales, Accounting, Organization, and System.
-- Added `PrimaryRail`, an icon-only major-business-area rail with permission-aware destinations, tooltips, selected-state affordance, and semantic navigation labels.
-- Added `SecondaryNav`, which renders the current business area's title/description and its permission-filtered routes with icon, title, supporting description, selected tint, and active left accent.
-- Rebuilt `AppShell` as a three-column token-driven workspace using `--rail-width`, `--secondary-nav-width`, `--header-height`, and `--tabbar-height`; the secondary column can collapse without changing the primary rail contract.
-- Refined `Topbar` around route metadata. Global search now searches the same permission-aware route registry, while theme, notifications, profile, and logout behaviors remain intact.
-- Added `WorkspaceTabs` with route icons, titles, close actions, selected state, horizontal overflow, predictable adjacent-tab fallback, a 10-tab guard, and persisted/restored tabs through `aster:workspace-tabs:v2`.
-- Responsive behavior now changes the rail + secondary navigation into a single off-canvas navigation workspace below tablet width rather than compressing business content. `Escape` closes mobile navigation; `Ctrl/Cmd+Shift+B` toggles the secondary navigation on desktop; the existing global `Ctrl/Cmd+K` search shortcut remains.
-- Added `src/components/shell/shell.css` as the Phase 3 shell layout layer. It uses runtime semantic/layout/motion tokens and contains no raw theme colors or decorative gradients.
-- Extracted reusable login branding into `Brand.tsx` and removed the obsolete `Sidebar.tsx`, eliminating the competing pre-Phase-3 navigation architecture instead of leaving dead design-system code behind.
-- Added automated shell guard tests for route metadata completeness, business-area defaults, runtime layout-token consumption, motion-token consumption, and inclusion of shell CSS in the no-gradient/no-raw-theme-color constitution test.
-- Validation: GitHub Actions `Validate starter` run `35827651100` passed (`npm test` + TypeScript/Vite production build), and GitHub Pages `Deploy v2.0 preview` run `35827651073` passed for the same Phase 3 code head.
-- Remaining work intentionally belongs to Phase 4+: page-body primitives and module-specific floorplans were not redesigned inside the shell phase.
-
-## Exit Criteria
-
-The shell must feel like an enterprise workspace even when the page body contains only an empty state.
-
-**Status: [x] Complete — the application now has an explicit business-area rail, contextual secondary navigation, metadata-driven global context/search, persistent workspace tabs, token-driven desktop/tablet/mobile behavior, keyboard navigation affordances, and passing build/preview gates.**
+**Status: [x] Complete.**
 
 ---
 
-# 10. Phase 4 — Core Visual Primitives
+# Phase 4 — Core Visual Primitives
 
 ## Objective
 
-Create the visual vocabulary every screen will reuse.
+Establish a reusable visual vocabulary before additional module migration.
 
-## Components
+## Completed primitives
 
-### Surface
-
-Token-driven surface foundation.
-
-### IconChip
-
-- tinted solid background,
-- semantic or category color,
-- icon never floats without context unless the UI demands it.
-
-### StatCard
-
-Target anatomy:
-
-```text
-│ UPPERCASE LABEL                      [icon chip]
-│
-│ 14,671
-│ ━━━━━━━━━━━━━━━━━━━━━
-│ +2,803 vs previous period
-```
-
-Supports:
-
-- left accent,
-- label,
-- value,
-- icon chip,
-- optional progress,
-- optional trend,
-- optional hint.
-
-### StatusPill
-
-Soft background + matching semantic text.
-
-### ActionIcon
-
-Used for frequent row actions.
-
-### OverflowMenu
-
-`⋯` with icon + text actions.
-
-### FilterBar
-
-Standard placement/order for search, filters, refresh/export, saved views.
-
-### EmptyState
-
-Small tinted icon chip + strong title + muted explanation + optional action.
-
-### Additional primitives
-
+- [x] `Surface`
+- [x] `IconChip`
+- [x] `StatCard`
+- [x] `StatusPill`
+- [x] `ActionIcon`
+- [x] `OverflowMenu`
+- [x] `FilterBar`
+- [x] `EmptyState`
 - [x] `SectionHeader`
 - [x] `EntityCell`
 - [x] `MoneyCell`
@@ -720,877 +342,483 @@ Small tinted icon chip + strong title + muted explanation + optional action.
 - [x] `ObjectHeader`
 - [x] `CommandBar`
 
+## Rules
+
+- Primitives consume runtime semantic tokens.
+- Compatibility wrappers may delegate to primitives while older modules migrate.
+- Frequent actions use icon-first controls with tooltips.
+- Less-common actions use overflow menus with icon + text.
+- Semantic status color is restrained; dashboards must not become rainbow grids.
+
+## Exit criteria
+
+- [x] Shared primitives exist and are token-driven.
+- [x] Core visual patterns no longer require page-specific styling systems.
+- [x] Automated source/CSS guards cover the shared vocabulary.
+
+**Status: [x] Complete.**
+
+---
+
+# Phase 5 — Overlay & Interaction Architecture
+
+## Objective
+
+Make overlay choice predictable so developers do not invent per-page CRUD behavior.
+
+## Shared surfaces
+
+- [x] `CreateModal`
+- [x] `EditModal`
+- [x] `RecordDrawer`
+- [x] `ApprovalDrawer`
+- [x] `ConfirmActionPopover`
+
+## Required behavior
+
+### Modal
+
+- centered,
+- clear icon/title/description hierarchy,
+- contained scroll region for longer forms,
+- stable footer actions,
+- runtime width/radius/spacing/motion,
+- create/edit intent is explicit.
+
+### Record drawer
+
+- opens from the right,
+- object header and status context,
+- sticky toolbar/close affordance,
+- optional footer actions,
+- body supports overview/activity/related content,
+- closes without losing table query context.
+
+### Approval drawer
+
+- record context,
+- workflow/routing context,
+- decision affordances remain subordinate to review information,
+- audit/history region can be composed without a second overlay system.
+
+### Confirmation
+
+- contextual popover close to action,
+- concise impact copy,
+- destructive action visually differentiated,
+- no unnecessary confirmation modals for small actions.
+
 ## Implementation record — 2026-09-23
 
-- Added `src/components/primitives/index.tsx` as the shared primitive API with `Surface`, `IconChip`, `StatCard`, `StatusPill`, `ActionIcon`, `OverflowMenu`, `FilterBar`, `EmptyState`, `SectionHeader`, `EntityCell`, `MoneyCell`, `ProgressCell`, `QuickFilterTabs`, `Metric`, `ObjectHeader`, and `CommandBar`.
-- Added `src/components/primitives/primitives.css`; primitive styling is driven by semantic/runtime tokens for surfaces, borders, radius, control size, typography, elevation, and semantic tones. No primitive owns raw theme hex values or decorative gradients.
-- `StatCard` implements the roadmap anatomy with restrained left accent, uppercase micro-label, tabular metric value, contextual `IconChip`, optional progress, semantic trend/hint, and optional footer.
-- `StatusPill` communicates status with text + dot + semantic tone, avoiding color-only state communication at the primitive level.
-- `ActionIcon` and `OverflowMenu` establish the inline-action contract: frequent actions are icon-first with tooltips; less-common actions use icon + text in overflow.
-- Existing `ErpPrimitives.tsx` now routes `EntityCell`, `MoneyCell`, semantic statuses, row actions, quick views, and stock progress through the shared primitives. This preserves existing module APIs while removing a second visual system.
-- Dashboard stat cards now consume `StatCard`, chart loading uses `Surface`, and recent activity uses `Surface` + `SectionHeader`, proving shared primitives against a real screen rather than a showcase-only page.
-- Added automated primitive export/token-contract tests and included `primitives.css` in the global no-gradient/no-raw-theme-color constitution guard.
-- Validation: GitHub Actions `Validate starter` run `35828380946` passed after primitive contract tests were added; GitHub Pages `Deploy v2.0 preview` run `35828380924` also passed for the same head.
-- Migration boundary: legacy page-specific CSS that describes current module layout remains until Phase 6/9; Phase 4 removes primitive duplication without prematurely rewriting domain floorplans.
+- `src/components/overlays/index.tsx` provides all intent-specific surfaces and delegates animation to Phase 2 `Animated*` primitives.
+- `src/components/overlays/overlays.css` defines token-driven overlay anatomy without raw theme colors or decorative gradients.
+- `CrudModal`, `CrudDrawer`, and `ConfirmPopover` remain migration adapters; they delegate to the shared overlay contract rather than maintaining another visual system.
+- `CrudModal` now accepts explicit `intent: 'create' | 'edit'`; title parsing remains only as a backward-compatible fallback for legacy callers.
+- Products validates the intended master-data path: list → inspection drawer → edit modal, preserving list context.
+- Phase 5 contract tests cover required exports, animated-surface reuse, layout-token consumption, and compatibility intent handling.
+- An initial test assertion incorrectly looked for drawer-width variables in CSS; CI caught the test defect. The assertion was corrected to validate drawer tokens where they are actually consumed in the overlay source.
 
-## Exit Criteria
+## Validation
 
-Dashboard and list pages should be constructible primarily from shared primitives with minimal page-specific styling.
+- `Validate starter` run **35843068978**: tests + production build passed.
+- `Deploy v2.0 preview` run **35843069024**: preview build + Pages deployment passed.
 
-**Status: [x] Complete — the primitive API covers the required visual vocabulary, ERP helper compatibility is preserved through delegation, the Dashboard consumes the new system, and CI/preview gates pass.**
+## Exit criteria
+
+- [x] Developers can choose the appropriate surface from intent without inventing behavior.
+- [x] Create/edit/inspect/approval/confirmation have shared anatomy.
+- [x] Runtime motion/reduced-motion behavior remains centralized.
+- [x] Compatibility paths delegate to the shared architecture.
+- [x] CI and Pages gate pass.
+
+**Status: [x] Complete.**
 
 ---
 
-# 11. Phase 5 — Overlay & Interaction Architecture
+# Phase 6 — Enterprise Data Workspace
 
 ## Objective
 
-Standardize when the application uses modal, drawer, popover, or full page.
+Replace generic CRUD-table behavior with a reusable enterprise master-data workspace contract while preserving domain-specific row content and actions.
 
-## UX decision matrix
+## Required capabilities
 
-| User intent | Surface |
-| --- | --- |
-| Small confirmation | Popconfirm / contextual popover |
-| Create small/medium entity | Modal |
-| Edit small/medium entity | Modal |
-| Inspect existing entity | Right-side drawer |
-| Review / approve request | Right-side drawer |
-| Quick journal/payment/action | Modal |
-| Complex document | Full page |
-| Complex configuration | Full page |
+- [x] Sticky table header
+- [x] Search
+- [x] Structured filters
+- [x] Reset filters
+- [x] Refresh
+- [x] Export
+- [x] Column visibility
+- [x] Sorting
+- [x] Pagination
+- [x] Client mode
+- [x] Server-mode query interface
+- [x] URL-backed query state
+- [x] Optional saved views
+- [x] Meaningful bulk selection only when bulk actions exist
+- [x] Row overflow/action composition
+- [x] Record-drawer integration
+- [x] Empty state
+- [x] Loading state
+- [x] Error state
+- [x] Large-client-list virtualization support
 
-## Modal pattern
+## Architecture decision
 
-Use for focused create/edit:
+`EnterpriseDataTable` is the forward master-data table contract. `DataTable` and `DomainTable` are legacy/migration surfaces and should be progressively delegated to or replaced by `EnterpriseDataTable`; they must not evolve into separate table design systems.
 
-- icon chip + title,
-- short explanation where useful,
-- two-column form when width allows,
-- scrollable body,
-- persistent footer,
-- ghost Cancel,
-- solid primary action,
-- validation near fields,
-- snappy entry/exit.
+The contract intentionally separates:
 
-## Record drawer pattern
+```text
+Data presentation
+        +
+Query state
+        +
+Client/server data mode
+        +
+Domain-provided columns/filters/actions
+```
 
-Use for record inspection:
+This allows the same workspace shell to support local demo data today and API-backed pagination/filtering later without rewriting screen UX.
 
-- identity header,
-- status pill,
-- key/value metadata,
-- contextual action icons,
-- tabs/sections where needed,
-- activity / workflow timeline,
-- no loss of underlying table/filter position.
+## Implementation record — 2026-09-23
 
-## Confirmation pattern
+- Added `src/components/data/EnterpriseDataTable.tsx` as a generic typed workspace for records with stable IDs.
+- Query state includes search, page, page size, sort field/order, and structured filter values.
+- Query state can be reflected into the route through namespaced `useSearchParams`, preserving workspace context across inspection/edit/navigation.
+- Server mode exposes `onQueryChange` + `total`; client mode performs local search/filtering and virtualizes larger result sets.
+- Column visibility uses the shared animated dropdown and current runtime table preferences.
+- Export uses the shared CSV helper and exports selected rows when meaningful selection exists, otherwise the current result set.
+- Bulk selection is not shown unless the screen supplies domain-valid bulk actions.
+- Loading/error/empty handling is part of the component contract rather than improvised page markup.
+- Products was migrated as the real-screen validation target and retains its domain-specific KPI strip, entity cells, stock progress, action menu, inspection drawer, and create/edit modal behavior.
+- Added automated contract tests for the enterprise data workspace and Products composition.
+- Initial implementation exposed an Ant Design grouped-column typing edge during export; CI stopped the batch, and export key resolution was corrected with a narrow type guard before page migration continued.
 
-Prefer contextual popover close to the initiating action for:
+## Validation
 
-- submit,
-- post,
-- approve,
-- receive,
-- archive,
-- suspend,
-- reverse,
-- cancel.
+- Foundation build after type fix: `Validate starter` run **35843608209** passed.
+- Products migration: `Validate starter` run **35843739458** passed.
+- Contract-test head: `Validate starter` run **35843939296** passed.
+- Contract-test preview: `Deploy v2.0 preview` run **35843939328** passed build and Pages deployment.
 
-Do not stack unnecessary modal-on-modal flows.
+## Exit criteria
 
-## Shared components
+- [x] A normal master-data page no longer needs to behave like a generic CRUD generator.
+- [x] Query/filter/page context can survive record inspection and route transitions.
+- [x] Server-backed screens can adopt the same interaction contract without replacing the component.
+- [x] Row actions and bulk actions remain domain-defined.
+- [x] CI and Pages gate pass.
 
-- [ ] `CreateModal`
-- [ ] `EditModal`
-- [ ] `RecordDrawer`
-- [ ] `ApprovalDrawer`
-- [ ] `ConfirmActionPopover`
-
-## Exit Criteria
-
-Developers should be able to choose the correct interaction surface from this documented matrix without inventing new behavior.
+**Status: [x] Complete.**
 
 ---
 
-# 12. Phase 6 — Enterprise Data Workspace
+# Phase 7 — Workflow / Approval System
 
 ## Objective
 
-Make list screens feel like business software rather than generic CRUD tables.
+Create a reusable workflow floorplan for routed reviews/approvals without coupling it to a single domain.
 
-## Table rules
+## Target capabilities
 
-Primary entity column:
+- [ ] Workflow status model (draft/pending/forwarded/approved/rejected/settled or domain-mapped equivalents)
+- [ ] Approval route/timeline primitive
+- [ ] Current-stage emphasis
+- [ ] Actor/role/context display
+- [ ] Decision history / audit trail
+- [ ] `ApprovalDrawer` real-screen integration
+- [ ] Approve / reject / forward / pull-to-desk action composition
+- [ ] Mandatory-reason support for destructive or exception decisions
+- [ ] Contextual confirmations where appropriate
+- [ ] Permission-aware action visibility contract
+- [ ] Empty/loading/error behavior
+- [ ] Fast state-change motion without decorative timeline animation
+- [ ] Responsive drawer/workspace behavior
+- [ ] Tests for workflow state transitions and action visibility
 
-- visually strongest,
-- clickable,
-- supports secondary identifier/subtitle.
+## UX rules
 
-Secondary columns:
+- Review information comes before decision controls.
+- Status and current routing stage must be obvious without relying on color alone.
+- Timeline/history should distinguish completed, current, waiting, rejected, and exceptional states.
+- Approval actions belong in the review drawer unless the domain requires a full document workspace.
+- A user should be able to review, decide, close, and continue the originating list without losing context.
 
-- quieter,
-- semantically aligned,
-- numeric values right aligned,
-- money tabular,
-- status pills small and restrained.
+## Exit criteria
 
-Actions:
+A reusable workflow screen can express a routed decision, show its audit context, and complete a decision without inventing a module-specific interaction system.
 
-- frequent action = icon + tooltip,
-- multiple secondary actions = `⋯`,
-- never show `View | Edit | Delete` text in every row.
-
-## Data workspace stack
-
-```text
-Quick views / saved views
-        ↓
-Filter bar
-        ↓
-Enterprise table
-        ↓
-Record drawer on row/entity click
-```
-
-## Capabilities
-
-- [ ] sticky header
-- [ ] search
-- [ ] structured filters
-- [ ] reset filters
-- [ ] refresh
-- [ ] export
-- [ ] column visibility
-- [ ] sorting
-- [ ] pagination
-- [ ] server-mode interface
-- [ ] URL-backed query state
-- [ ] optional saved views
-- [ ] bulk selection only where meaningful
-- [ ] row-action overflow
-- [ ] record drawer integration
-- [ ] empty/loading/error states
-
-## Exit Criteria
-
-A normal master-data page should no longer visually resemble a CRUD generator.
+**Status: [ ] Not started.**
 
 ---
 
-# 13. Phase 7 — Workflow / Approval System
+# Phase 8 — Settings & Live Theme Studio
 
 ## Objective
 
-Create reusable workflow visualization and approval interactions.
+Make runtime customization feel like a product feature rather than a developer configuration panel.
 
-## Approval timeline anatomy
+## Target sections
 
-```text
-✓ Submitted
-│ Ahmed · 10:42 AM
-│
-✓ Department approved
-│ Sara · 11:06 AM
-│
-◉ Finance approval
-│ Awaiting review
-│
-○ Posted
-```
+- [ ] Brand
+- [ ] Theme mode
+- [ ] Primary/accent color
+- [ ] Typography
+- [ ] Text size
+- [ ] Density
+- [ ] Radius
+- [ ] Content width
+- [ ] Motion speed
+- [ ] Reduced-motion/effective policy indication
+- [ ] Sound master/category/volume controls
+- [ ] Table defaults
+- [ ] Reset-to-project-defaults
+- [ ] Live preview where useful
 
-## States
+## Requirements
 
-- completed
-- current
-- pending
-- rejected
-- skipped
-- cancelled
+- Changes apply without rebuild/reload.
+- Settings continue to resolve through the same runtime config/token engine; the studio must not create a second theme model.
+- Controls use shared primitives and accessible labels/help text.
+- Invalid/stale persisted values remain safely recoverable through `resolveConfig`.
+- Dark/light preview hierarchy must be professional in both modes.
 
-## Timeline data
+## Exit criteria
 
-```text
-actor
-role
-department
-timestamp
-note
-status
-```
+A project can be broadly reskinned and density/motion/typography behavior changed live through Settings without feature code changes.
 
-## Components
-
-- [ ] `ApprovalTimeline`
-- [ ] `WorkflowStep`
-- [ ] `WorkflowStatus`
-- [ ] `WorkflowActionPanel`
-- [ ] `ActivityTimeline`
-
-## Reuse targets
-
-- expenses
-- purchase approvals
-- journal approvals
-- invoice approvals
-- stock adjustments
-- user/security requests
-- future HR workflows
-
-## Exit Criteria
-
-Approval/review workflows should communicate state and history without requiring users to read raw logs.
+**Status: [ ] Not started.**
 
 ---
 
-# 14. Phase 8 — Settings & Live Theme Studio
+# Phase 9 — ERP Floorplan / Module Migration
 
 ## Objective
 
-Expose the runtime design system professionally and prove settings against real UI primitives.
+Migrate every module to the shared system while preserving correct domain behavior.
 
-## Appearance
+## Migration order
 
-- Light / Dark / System
-- Primary palette presets
-- Custom primary color
-- Accent color
-- Font family
-- Text size S/M/L
-- Density Compact/Comfortable
-- Corner radius slider
-- Content width Boxed/Full
-- Collapse navigation by default
+1. [ ] Remaining simple master-data modules → Master List / Master + Detail
+2. [ ] Customers / suppliers / employees / warehouses → Master + Detail where inspection matters
+3. [ ] Chart of Accounts → Tree Workspace
+4. [ ] Stock Levels → Analytical Workspace
+5. [ ] Stock Transfers → Document Workspace
+6. [ ] Purchase Orders → Document Workspace
+7. [ ] Sales Invoices → Document Workspace
+8. [ ] Journal Entries → Accounting Document Workspace
+9. [ ] Users / roles → Security Workspace
+10. [ ] Dashboard / reports → Analytical Workspace
 
-Remove user-facing implementation details such as internal Ant Design "token algorithm" unless there is a strong product reason to keep them.
+## Migration rules
 
-## Motion
+- Do not blindly wrap every module in `EnterpriseDataTable`.
+- Reuse Phase 4 primitives, Phase 5 interactions, Phase 6 data-workspace behavior, and Phase 7 workflow patterns as appropriate.
+- Remove superseded CSS/components as migrations complete.
+- Do not maintain page-specific design systems.
+- Domain correctness takes precedence over visual uniformity.
+- Complex documents must expose line items, totals, status, actions, and document context as first-class information.
+- Derived data such as stock balances must not look editable like a master record.
 
-- Interface motion on/off
-- Fast / Normal
-- automatic OS reduced-motion behavior
+## Exit criteria
 
-## Sound
+Every routed module has an explicit floorplan classification and no important domain has been reduced to generic CRUD behavior.
 
-- master on/off
-- volume
-- click
-- success
-- warning
-- notification
-
-## Other tabs
-
-- Table preferences
-- Notifications
-- General/workspace settings
-
-## Live preview
-
-The live preview should display real system primitives rather than decorative mock UI:
-
-- mini shell
-- stat card
-- status pill
-- input
-- primary/secondary button
-- table row
-- modal trigger
-- drawer trigger
-- motion behavior
-
-Settings should update both preview and live application immediately.
-
-## Tasks
-
-- [ ] simplify settings information architecture
-- [ ] remove implementation-only controls
-- [ ] upgrade primary preset picker
-- [ ] improve accent input
-- [ ] connect density to full spacing system
-- [ ] connect radius to full radius system
-- [ ] connect typography to full type scale
-- [ ] build real-component live preview
-- [ ] add reset/persistence feedback
-- [ ] preference migration tests
-
-## Exit Criteria
-
-Every visible customization setting must have an immediate observable effect in both live preview and the real application.
+**Status: [ ] Not started.**
 
 ---
 
-# 15. Phase 9 — ERP Floorplan / Module Migration
+# Phase 10 — QA, Accessibility & Design-System Enforcement
 
 ## Objective
 
-Migrate modules by floorplan rather than redesigning each independently.
+Make the system resilient enough to remain consistent as new projects and modules are added.
+
+## Required QA matrix
+
+### Theme / runtime
+
+- [ ] Light
+- [ ] Dark
+- [ ] System
+- [ ] Runtime primary/accent changes
+- [ ] Runtime typography changes
+- [ ] Compact/comfortable density
+- [ ] Radius/content width changes
+- [ ] Fast/normal motion
+- [ ] OS reduced motion
+
+### Responsive
+
+- [ ] Desktop wide
+- [ ] Desktop constrained
+- [ ] Tablet
+- [ ] Mobile/narrow shell fallback where supported
+- [ ] Modal/drawer/table overflow behavior
+
+### Accessibility
+
+- [ ] Keyboard navigation
+- [ ] Visible focus
+- [ ] Tooltip/aria labels for icon-only actions
+- [ ] Semantic labels for status beyond color
+- [ ] Modal/drawer focus management
+- [ ] Escape/close behavior
+- [ ] Form errors associated to controls
+- [ ] Sufficient contrast in light and dark modes
+- [ ] Reduced-motion behavior
+
+### Data/workflow
+
+- [ ] Empty
+- [ ] Loading
+- [ ] Error
+- [ ] Large lists
+- [ ] Long labels/values
+- [ ] Bulk selection
+- [ ] URL query restoration
+- [ ] Server-mode query contract
+- [ ] Approval exception/rejection flows
+
+### Enforcement
+
+- [ ] Automated no-decorative-gradient guard remains active
+- [ ] Automated raw shared-theme-color guard remains active
+- [ ] Shared-primitives contract tests
+- [ ] Overlay contract tests
+- [ ] Enterprise-data-workspace contract tests
+- [ ] Workflow contract tests
+- [ ] Route/floorplan metadata tests
+- [ ] TypeScript build
+- [ ] GitHub Actions
+- [ ] GitHub Pages preview
+
+## Exit criteria
+
+The starter can be cloned into a new ERP/SaaS project and extended without developers needing to recreate layout, styling, motion, table, overlay, or workflow rules.
+
+**Status: [ ] Not started.**
 
 ---
 
-## 15.1 Analytical / dashboard floorplan
+## 8. Validation Policy
 
-### Dashboard
+After every logical implementation batch:
 
-Target characteristics:
+1. run automated tests,
+2. run the TypeScript/Vite production build,
+3. inspect CI,
+4. fix failures before stacking another major stage,
+5. inspect light/dark implications,
+6. inspect responsive implications,
+7. inspect reduced-motion implications when motion is touched,
+8. verify the `v2.0` Pages deployment when the batch affects rendered UI.
 
-- strong operational summary,
-- left-accent stats,
-- contextual charts,
-- restrained icon chips,
-- semantic alerts,
-- no decorative gradient cards,
-- action/attention queues where useful.
+A phase may only be marked complete after its acceptance criteria and CI/Pages gate are reviewed.
 
-Status: `[ ]`
-
----
-
-## 15.2 Master-detail floorplan
-
-### Products
-
-Flow:
-
-```text
-List → click product → record drawer → edit modal
-```
-
-Potential detail sections:
-
-- Overview
-- Inventory
-- Pricing
-- Suppliers
-- Activity
-
-Status: `[ ]`
-
-### Customers
-
-Flow:
-
-```text
-List → customer drawer → invoices/payments/activity
-```
-
-Status: `[ ]`
-
-### Suppliers
-
-Flow:
-
-```text
-List → supplier drawer → purchase/orders/bills/activity
-```
-
-Status: `[ ]`
-
-### Users
-
-Flow:
-
-```text
-List → security drawer → roles/scopes/activity
-```
-
-Status: `[ ]`
+Preview: `https://ahmaduarmash.github.io/erp-template/`
 
 ---
 
-## 15.3 Tree workspace floorplan
+## 9. Cleanup Policy
 
-### Chart of Accounts
+As the design system replaces earlier experimental work:
 
-Must consume shared system primitives rather than maintain a separate visual system.
+- migrate reusable decisions into tokens/primitives,
+- remove obsolete/conflicting CSS,
+- consolidate duplicated components,
+- prevent feature-owned theme systems,
+- keep compatibility adapters only while migrations still depend on them,
+- prefer evolution of good existing architecture over rewrites,
+- document architecture changes that alter the original implementation path.
 
-Required:
+Known migration debt after Phase 6:
 
-- hierarchy/tree,
-- list toggle if useful,
-- account-type grouping,
-- status/posting indicators,
-- record detail drawer/panel,
-- ledger action,
-- add child,
-- deactivate rather than destructive delete where applicable.
-
-Status: `[ ]`
-
-### Warehouses
-
-- hierarchical warehouse/storage tree,
-- detail view,
-- stock context,
-- transfer actions.
-
-Status: `[ ]`
+- `DataTable` and `DomainTable` still exist for legacy pages; they should delegate to or be retired in favor of the enterprise data-workspace contract during Phase 9.
+- Compatibility CSS aliases remain until affected feature styles are migrated.
+- Generic `ModulePage` remains a compatibility route path for modules that have not yet received their final floorplan; it is not the target architecture for complex ERP documents.
 
 ---
 
-## 15.4 Document workspace floorplan
+## 10. Progress Log
 
-### Journal Entries
+### 2026-09-23 — Phases 1–4 baseline confirmed
 
-- multi-line accounting document,
-- debit = credit validation,
-- Draft → Posted → Reversed,
-- full document workspace,
-- quick journal remains modal,
-- drawer for read-only inspection from list where useful.
+Runtime tokens, motion/feedback, enterprise shell, and shared visual primitives were already complete on `v2.0` when this continuation began. Their architecture was inspected before new work.
 
-Status: `[ ]`
+### 2026-09-23 — Phase 5 completed
 
-### Purchase Orders
+- Audited existing overlay implementation rather than rewriting it.
+- Confirmed all required intent-specific surfaces already existed.
+- Removed title-text dependence as the primary create/edit intent API in `CrudModal` while retaining a legacy fallback.
+- Added overlay architecture regression tests.
+- CI caught and helped correct an inaccurate drawer-token test assertion.
+- Full CI and Pages deployment passed.
 
-- supplier header,
-- line items,
-- totals,
-- receive progress,
-- document workflow,
-- print/send/receive/close actions.
+### 2026-09-23 — Phase 6 completed
 
-Status: `[ ]`
-
-### Sales Invoices
-
-- customer header,
-- line items,
-- tax/totals,
-- outstanding amount,
-- payment context,
-- credit note/cancel workflow.
-
-Status: `[ ]`
-
-### Stock Transfers
-
-- source/destination,
-- line items,
-- stock availability,
-- Draft → Submitted/In Transit → Received.
-
-Status: `[ ]`
-
-### Payments
-
-- Receive / Pay / Internal Transfer,
-- source/destination accounts,
-- allocation table,
-- allocated/unallocated totals.
-
-Status: `[ ]`
+- Audited `DataTable` and `DomainTable`; identified functional duplication and inconsistent capability depth.
+- Added `EnterpriseDataTable` as the forward master-data contract.
+- Added URL-backed query state, structured filters, client/server modes, saved views, export/columns/refresh/pagination/sorting, conditional bulk selection, virtualization, and state handling.
+- CI caught an Ant Design grouped-column typing issue in export resolution; fixed before migration continued.
+- Migrated Products as the validation screen while preserving its domain-specific KPI, stock, drawer, and modal UX.
+- Added contract tests and verified CI + Pages deployment.
 
 ---
 
-## 15.5 Operational / approval floorplan
+## 11. Immediate Next Stage
 
-### Stock Levels
+**Next: Phase 7 — Workflow / Approval System.**
 
-Not CRUD.
+Before implementation:
 
-- availability analytics,
-- low/out-of-stock views,
-- warehouse/category filters,
-- stock ledger / transfer / replenish actions.
-
-Status: `[ ]`
-
-### Expenses
-
-- approval queue,
-- record drawer,
-- receipt preview,
-- approval timeline,
-- Approve / Reject / Request changes.
-
-Status: `[ ]`
+1. inspect existing workflow/approval/review screens and any status/timeline helpers,
+2. identify reusable route/status/audit models already present,
+3. choose the best real-screen validation target,
+4. reuse `ApprovalDrawer`, `ObjectHeader`, `StatusPill`, `CommandBar`, and Phase 2 motion,
+5. keep workflow state/domain rules separate from visual primitives,
+6. add tests for state mapping and action visibility,
+7. validate through CI and Pages before marking Phase 7 complete.
 
 ---
 
-# 16. Module Migration Order
+## 12. Documentation Maintenance Rule
 
-Recommended order after Phases 1–8:
+This file is part of the implementation. After each meaningful stage or sub-stage it must reflect:
 
-1. Dashboard
-2. Products
-3. Chart of Accounts
-4. Journal Entries
-5. Purchase Orders
-6. Stock Levels
-7. Stock Transfers
-8. Warehouses
-9. Sales Invoices
-10. Payments
-11. Expenses
-12. Customers
-13. Suppliers
-14. Users & Permissions
-15. Notifications / Audit refinements
+- completed checklist items,
+- date/status,
+- important implementation decisions,
+- architecture changes,
+- components/primitives created,
+- migrations performed,
+- technical debt removed or intentionally retained,
+- validation performed,
+- remaining work,
+- next recommended stage.
 
-Reasoning:
-
-- Dashboard validates core primitives.
-- Products validates master-detail + record drawer.
-- COA validates tree workspace.
-- Journal validates financial document workflow.
-- PO validates commercial line-item documents.
-- Stock Levels validates analytical operational workspace.
-- Remaining modules then reuse proven patterns.
+If implementation reveals a better architecture than an older roadmap instruction, document the change and why it better preserves the original product goal. Never silently diverge.
 
 ---
 
-# 17. Phase 10 — QA, Accessibility & Design-System Enforcement
-
-## Theme matrix
-
-Test:
-
-- Light
-- Dark
-- System
-- each primary preset
-- custom primary
-- custom accent
-- S/M/L text
-- Compact/Comfortable density
-- minimum/default/maximum radius
-- Boxed/Full width
-- Fast/Normal motion
-- Motion off
-- OS reduced motion
-- Sound on/off
-
-## Responsive matrix
-
-- large desktop
-- normal desktop
-- laptop
-- tablet
-- mobile
-
-## Accessibility
-
-- [ ] keyboard navigation
-- [ ] focus visibility
-- [ ] accessible icon labels
-- [ ] semantic buttons/links
-- [ ] dialog focus trapping
-- [ ] drawer focus trapping
-- [x] reduced motion
-- [ ] color contrast
-- [ ] status not communicated by color alone
-
-## Performance
-
-- [x] avoid per-cell motion listeners
-- [ ] avoid unnecessary rerenders from theme changes
-- [ ] virtualize large tables
-- [ ] lazy load heavy feature screens
-- [ ] prevent layout thrash during motion
-- [x] use transform/opacity for animation where possible
-
-## Automated guardrails
-
-Add tests/lint checks where practical for:
-
-- [x] no decorative gradient declarations
-- [x] no raw feature-level theme hex colors
-- [ ] no arbitrary feature-specific radius rules
-- [x] no feature-specific animation durations
-- [x] token resolver tests
-- [x] palette generator tests
-- [x] settings migration tests
-- [x] reduced-motion tests
-- [x] light/dark token resolution tests
-
-## Visual/E2E coverage
-
-Reference flows:
-
-- Dashboard
-- Product list → drawer → edit modal
-- COA tree → account detail
-- Journal create/post/reverse
-- PO create/submit/receive
-- Expense review/approval
-- Settings live preview
-
-## Exit Criteria
-
-The system should remain coherent under all supported combinations of theme, density, typography, radius, width, and motion preferences.
-
----
-
-# 18. UX Surface Decision Guide
-
-Before implementing a new feature, use this table.
-
-| Scenario | Preferred surface | Why |
-| --- | --- | --- |
-| Quick destructive confirmation | Popconfirm | Minimal interruption |
-| Confirmation with reason/extra field | Small contextual popover or modal | Needs input but remains focused |
-| Create simple master record | Modal | Focused task |
-| Edit simple master record | Modal | Focused task |
-| View record details | Drawer | Preserve list context |
-| Review/approve workflow record | Drawer | Preserve queue + show timeline/actions |
-| Create quick two-line journal | Modal | Short focused entry |
-| Create full journal | Full page | Complex line-based document |
-| Create PO / Invoice / Transfer | Full page | Complex document |
-| Configure workspace/theme | Full page | Multi-section settings |
-
----
-
-# 19. Table Action Rules
-
-### One or two frequent actions
-
-Use icons with tooltips.
-
-Example:
-
-```text
-[eye] [edit] [⋯]
-```
-
-### More actions
-
-Only the most frequent action(s) remain inline.
-
-Overflow contains icon + text:
-
-```text
-⋯
-  Edit
-  Duplicate
-  Print
-  View audit trail
-  Archive
-```
-
-### Destructive actions
-
-- visually distinct,
-- not overly prominent,
-- require confirmation,
-- destructive workflow actions should not be represented as direct boolean toggles.
-
----
-
-# 20. Color Usage Rules
-
-Base UI:
-
-- neutral canvas,
-- neutral surfaces,
-- strong readable text,
-- subtle borders.
-
-Semantic usage:
-
-- Primary: identity, key action, selection
-- Accent: secondary brand/context
-- Green: success/active/completed
-- Amber: pending/attention
-- Red: destructive/error/critical
-- Blue: informational
-
-Category accents may be used for scanning, especially:
-
-- stat card left border,
-- icon chip,
-- tiny indicator,
-- chart series.
-
-Do not color entire screens or cards unnecessarily.
-
----
-
-# 21. Dark Mode Rules
-
-Dark mode is not simply inverted light mode.
-
-Use:
-
-- solid dark surfaces,
-- clear surface hierarchy,
-- border-lightening,
-- restrained shadows,
-- semantic tints with reduced saturation,
-- sufficient text contrast.
-
-Avoid:
-
-- black-on-black surfaces with invisible hierarchy,
-- excessive glow,
-- heavy white borders,
-- oversaturated status colors.
-
----
-
-# 22. Definition of a Professional Screen
-
-Before marking a screen complete, check:
-
-### Navigation
-
-- Can the user tell where they are?
-- Does the active domain/page remain obvious?
-
-### Context
-
-- Does viewing a record preserve previous list/filter state?
-
-### Hierarchy
-
-- Is the most important information visually strongest?
-- Is secondary information quieter?
-
-### Actions
-
-- Is the primary action obvious?
-- Are row actions icon-first?
-- Are secondary actions under overflow?
-
-### Motion
-
-- Does the interaction respond immediately?
-- Is exit faster than entry?
-- Is any animation decorative or distracting?
-
-### Color
-
-- Does each color communicate meaning?
-- Is the screen still understandable without relying only on color?
-
-### Density
-
-- Could someone use this screen for several hours without feeling overwhelmed?
-- Is there enough information without oversized whitespace?
-
-### Customization
-
-- Does the screen correctly respond to theme/density/radius/text settings?
-
-### Domain correctness
-
-- Does the screen behave like real accounting/inventory/purchasing software rather than generic CRUD?
-
----
-
-# 23. Suggested Code Organization
-
-Target direction:
-
-```text
-src/
-  theme/
-    ThemeProvider.tsx
-    resolveConfig.ts
-    tokens/
-      primitive.ts
-      semantic.ts
-      palette.ts
-      typography.ts
-      spacing.ts
-      elevation.ts
-      motion.ts
-
-  components/
-    primitives/
-      Surface.tsx
-      IconChip.tsx
-      StatusPill.tsx
-      ActionIcon.tsx
-      StatCard.tsx
-
-    overlays/
-      AnimatedModal.tsx
-      AnimatedDrawer.tsx
-      ConfirmActionPopover.tsx
-      RecordDrawer.tsx
-
-    data/
-      EnterpriseDataTable.tsx
-      FilterBar.tsx
-      EntityCell.tsx
-      MoneyCell.tsx
-
-    workflow/
-      ApprovalTimeline.tsx
-      WorkflowStatus.tsx
-      ActivityTimeline.tsx
-
-    shell/
-      AppShell.tsx
-      PrimaryRail.tsx
-      SecondaryNav.tsx
-      Topbar.tsx
-      WorkspaceTabs.tsx
-
-  features/
-    inventory/
-    accounting/
-    purchasing/
-    sales/
-    system/
-```
-
-Exact folder migration should be incremental; do not create churn simply to match this tree.
-
----
-
-# 24. Progress Log
-
-Use this section as work progresses.
-
-## 2026-09-23
-
-- [x] Reference screenshots/videos analyzed.
-- [x] UX principles documented.
-- [x] Implementation phases agreed.
-- [x] Living roadmap added to `v2.0`.
-- [x] Phase 1 — Runtime Design Token Engine completed.
-- [x] Runtime palette, semantic color, typography, spacing/density, radius, elevation, and layout tokens implemented.
-- [x] Ant Design, CSS variables, and Tailwind v4 aliases unified behind the same runtime resolver.
-- [x] Legacy AntD algorithm control removed; legacy Spacious density safely migrates to Comfortable.
-- [x] Decorative gradients and shared CSS raw theme hex values removed; automated constitution guard added.
-- [x] Phase 1 validation: unit tests and TypeScript/Vite production build pass; Pages preview build passes.
-- [x] Phase 2 — Motion & Feedback Engine completed.
-- [x] Fast/Normal interaction-specific runtime motion matrix, easing and spring tokens implemented.
-- [x] Shared animated modal/drawer/popover/dropdown plus page/tab/list transition primitives implemented.
-- [x] OS reduced-motion is a global hard veto across Motion for React, CSS and Ant Design.
-- [x] Delegated restrained press feedback retained; routine table-row stagger removed.
-- [x] Existing synthesized Web Audio feedback audited and retained with sound off by default.
-- [x] Phase 2 validation: motion contract tests, full test suite, TypeScript/Vite build and Pages preview build pass.
-- [x] Phase 3 — Enterprise Workspace Shell completed.
-- [x] Added permission-aware primary rail, contextual secondary navigation, metadata-driven header/search, and persistent route-icon workspace tabs.
-- [x] Shell layout and responsive behavior now consume runtime layout/motion tokens; tablet/mobile navigation is off-canvas and does not squeeze page content.
-- [x] Obsolete single-sidebar implementation removed after shared branding extraction.
-- [x] Phase 3 validation: shell contract tests, full CI build/test run, and GitHub Pages preview deployment all pass.
-- [x] Phase 4 — Core Visual Primitives completed.
-- [x] Shared primitive API and token-driven primitive CSS added; existing ERP cell/status/action helpers now delegate to the same vocabulary.
-- [x] Dashboard migrated to shared stat/surface/section primitives as a real-screen validation.
-- [x] Phase 4 validation: primitive contract tests, full CI build/test run, and GitHub Pages preview deployment all pass.
-
-Future entries should record:
-
-```text
-YYYY-MM-DD
-- Phase / component completed
-- Important architectural decision
-- Validation status
-- Remaining issue / next step
-```
-
----
-
-# 25. Immediate Next Step
-
-Phases 1–4 are complete. The next sequential phase is:
-
-> **Phase 5 — Overlay & Interaction Architecture**
-
-Before adding wrapper components, inspect the existing animated overlay layer and current CRUD/detail implementations. Reuse Phase 2 motion primitives; Phase 5 should standardize anatomy and intent, not create a second motion system.
+## 13. Quality Bar
+
+Do not optimize for checking boxes. Ask continuously:
+
+> **Would this feel intentional and productive to someone using the ERP for eight hours every day?**
+
+The final target remains:
+
+- polished enterprise SaaS quality,
+- excellent daily-use ERP UX,
+- fast perceived performance,
+- robust architecture,
+- broad runtime customization,
+- clear information hierarchy,
+- consistent interaction behavior,
+- domain-correct ERP interfaces,
+- professional light and dark modes,
+- accessibility,
+- reusable architecture for future projects.
