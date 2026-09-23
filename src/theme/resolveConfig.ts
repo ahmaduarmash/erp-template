@@ -4,6 +4,19 @@ type JsonObject = Record<string, unknown>;
 const object = (value: unknown): value is JsonObject =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
+function cleanText(value: unknown, maxLength: number) {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : null;
+}
+
+function safeLogoUrl(value: unknown) {
+  if (value === '') return '';
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (/^https:\/\//i.test(trimmed) || /^data:image\/(?:png|jpeg|webp|svg\+xml);/i.test(trimmed))
+    return trimmed.slice(0, 4000);
+  return null;
+}
+
 /**
  * Validate persisted preferences and migrate legacy values.
  * Project defaults remain authoritative for unknown or invalid fields.
@@ -26,10 +39,21 @@ export function resolveConfig(saved: unknown): TemplateConfig {
     const target = (config as unknown as Record<string, JsonObject>)[group];
 
     for (const [key, value] of Object.entries(saved[group])) {
-      if (!(key in target) || group === 'brand') continue;
+      if (!(key in target)) continue;
       const path = `${group}.${key}`;
 
-      if (allowed[path]) {
+      if (group === 'brand') {
+        if (key === 'name') {
+          const cleaned = cleanText(value, 48);
+          if (cleaned) config.brand.name = cleaned;
+        } else if (key === 'tagline') {
+          const cleaned = cleanText(value, 120);
+          if (cleaned !== null) config.brand.tagline = cleaned;
+        } else if (key === 'logoUrl') {
+          const logoUrl = safeLogoUrl(value);
+          if (logoUrl !== null) config.brand.logoUrl = logoUrl;
+        }
+      } else if (allowed[path]) {
         if (typeof value === 'string' && allowed[path].includes(value)) target[key] = value;
       } else if (group === 'theme' && key.endsWith('Color')) {
         if (typeof value === 'string' && /^#[\da-f]{6}$/i.test(value)) target[key] = value;
