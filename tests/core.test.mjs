@@ -162,10 +162,12 @@ test('Overlay interaction architecture exports intent-specific surfaces and cons
   assert.match(source, /AnimatedModal/);
   assert.match(source, /AnimatedDrawer/);
   assert.match(source, /AnimatedPopover/);
+  for (const token of ['--drawer-width-sm', '--drawer-width-md', '--drawer-width-lg'])
+    assert.match(source, new RegExp(`var\\(${token}\\)`));
 
   const css = readFileSync(new URL('../src/components/overlays/overlays.css', import.meta.url), 'utf8');
-  for (const token of ['--space-3', '--border-subtle', '--text-primary', '--bg-surface', '--drawer-width'])
-    assert.match(css, new RegExp(token === '--drawer-width' ? '--drawer-width-(?:sm|md|lg)' : `var\\(${token}\\)`));
+  for (const token of ['--space-3', '--border-subtle', '--text-primary', '--bg-surface'])
+    assert.match(css, new RegExp(`var\\(${token}\\)`));
 });
 
 test('Legacy CRUD compatibility uses explicit intent while retaining a safe migration fallback', () => {
