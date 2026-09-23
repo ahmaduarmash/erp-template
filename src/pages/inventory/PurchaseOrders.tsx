@@ -1,2 +1,1 @@
-import { PurchaseOrdersWorkspace } from '../erp/InventoryWorkspaces';
-export default PurchaseOrdersWorkspace;
+export { PurchaseOrdersWorkspace as default } from '../erp/DocumentWorkspaces';

@@ -1,2 +1,1 @@
-import { StockTransfersWorkspace } from '../erp/InventoryWorkspaces';
-export default StockTransfersWorkspace;
+export { StockTransfersWorkspace as default } from '../erp/DocumentWorkspaces';

@@ -1,2 +1,1 @@
-import { InvoicesWorkspace } from '../erp/AccountingWorkspaces';
-export default InvoicesWorkspace;
+export { InvoicesWorkspace as default } from '../erp/DocumentWorkspaces';

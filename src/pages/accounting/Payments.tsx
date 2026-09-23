@@ -1,2 +1,1 @@
-import { PaymentsWorkspace } from '../erp/AccountingWorkspaces';
-export default PaymentsWorkspace;
+export { PaymentsWorkspace as default } from '../erp/DocumentWorkspaces';
