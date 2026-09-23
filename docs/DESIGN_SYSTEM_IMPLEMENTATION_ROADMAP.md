@@ -128,7 +128,7 @@ A Purchase Order must feel like purchasing software. A Journal Entry must feel l
 | 7 | Workflow / Approval System | [x] |
 | 8 | Settings & Live Theme Studio | [x] |
 | 9 | ERP Floorplan / Module Migration | [x] |
-| 10 | QA, Accessibility & Design-System Enforcement | [ ] |
+| 10 | QA, Accessibility & Design-System Enforcement | [-] |
 
 A phase is complete only when its acceptance criteria and CI/Pages gate pass.
 
@@ -287,14 +287,11 @@ Validation:
 
 # Phase 9 — ERP Floorplan / Module Migration
 
-## Objective
+**Status: [x] Complete.**
 
-Ensure every routed module uses the shared product language while preserving the floorplan required by its domain.
-
-## Migration result
-
+Migration result:
 1. [x] Remaining routed master-data modules classified and migrated where needed.
-2. [x] Customers / suppliers migrated to Master + Detail; Warehouses intentionally retained as Tree Workspace. No routed Employees module exists in the starter, so no synthetic module was invented.
+2. [x] Customers / suppliers migrated to Master + Detail; Warehouses intentionally retained as Tree Workspace. No routed Employees module exists, so no synthetic module was invented.
 3. [x] Chart of Accounts → Tree Workspace.
 4. [x] Stock Levels → Analytical Workspace.
 5. [x] Stock Transfers → full-page Document Workspace.
@@ -302,53 +299,20 @@ Ensure every routed module uses the shared product language while preserving the
 7. [x] Sales Invoices → full-page Document Workspace.
 8. [x] Journal Entries → Accounting Document Workspace.
 9. [x] Users / roles → Security Workspace.
-10. [x] Dashboard → Analytical Workspace. No separate routed Reports module exists, so none was invented.
+10. [x] Dashboard → Analytical Workspace.
+11. [x] Payments → full-page Document Workspace.
 
-Additional routed transaction:
-- [x] Payments → full-page Document Workspace because complex payment allocation is explicitly governed by the document-workspace interaction rule.
+Key decisions:
+- Route metadata includes `WORKFLOW`; Dashboard is `ANALYTICAL`.
+- Customers/Suppliers share `PartnerMasterPage` with enterprise table + inspect drawer + create/edit modals.
+- Warehouse and Chart of Accounts remain hierarchy workspaces.
+- `DocumentWorkspace`, `DocumentSection`, and `DocumentSummary` own the reusable complex-document floorplan.
+- Security separates inspection from access editing.
 
-## Architecture decisions
-
-- Route metadata now explicitly includes `WORKFLOW` and classifies Dashboard as `ANALYTICAL`; routed modules have deliberate floorplans rather than relying on a generic CRUD label.
-- Customers and Suppliers share `PartnerMasterPage`, using `EnterpriseDataTable`, `RecordDrawer`, `CreateModal`, and `EditModal` while retaining domain-specific relationship tabs.
-- Warehouse structure is a hierarchy, so forcing it into Master + Detail would reduce domain correctness; it remains a tree/detail workspace with modal create/edit.
-- Chart of Accounts remains a tree/detail financial hierarchy; small account create/edit uses centered modals and deactivation uses contextual confirmation.
-- Stock Levels was already a derived analytical view and was retained rather than rewritten.
-- `DocumentWorkspace`, `DocumentSection`, and `DocumentSummary` provide the reusable full-page transaction floorplan. Complex documents no longer create/edit inside wide drawers.
-- Stock Transfer validates different source/destination warehouses and exposes Draft → In transit → Received lifecycle.
-- Purchase Order exposes supplier, lines, calculated total, and Draft → Ordered → Received lifecycle.
-- Sales Invoice exposes customer, lines, amount, issue/due dates, due-date validation, and Draft → Sent → Paid lifecycle.
-- Journal Entry exposes accounting lines, debit/credit totals, zero-difference validation, and posting lifecycle.
-- Payments expose financial-document context and a dedicated allocation region rather than generic CRUD editing.
-- Security separates user inspection (`RecordDrawer`) from invitation/access changes (`CreateModal`/`EditModal`) and retains role-permission/data-scope floorplans.
-
-## Cleanup performed
-
-- Routed Customers/Suppliers no longer depend on the old generic accounting/inventory partner implementations.
-- Routed Warehouses no longer uses the incomplete legacy button-only hierarchy screen.
-- Routed Stock Transfers, Purchase Orders, Sales Invoices, Journal Entries, and Payments now point to `DocumentWorkspaces`.
-- Complex document workspaces contain no raw `<Drawer>`/`<Modal>` transaction editor.
-- Floorplan and document composition tests enforce the chosen architecture.
-
-## Validation
-
-- Partner master-data batch: `Validate starter` **35849112411** passed; Pages **35849112381** passed and deployed.
-- Initial complex-document run **35849681042**: all 34 tests passed; TypeScript build correctly stopped on two unused imports.
-- Import cleanup: `Validate starter` **35849925654** passed; Pages **35849925712** passed and deployed.
-- Final tree/security/analytical alignment: `Validate starter` **35850244812** passed; Pages **35850244989** passed and deployed.
-
-## Exit criteria
-
-- [x] Every routed business module has an explicit floorplan classification.
-- [x] Master data uses master/detail behavior where inspection context matters.
-- [x] Hierarchies remain hierarchy workspaces.
-- [x] Derived inventory/dashboard data remains analytical rather than editable CRUD.
-- [x] Complex transaction modules use dedicated full-page workspaces.
-- [x] Security and workflow use their own domain floorplans.
-- [x] No non-existent module was invented solely to satisfy an older checklist item.
-- [x] CI and Pages gate pass.
-
-**Status: [x] Complete.**
+Validation:
+- Partner master batch: `Validate starter` **35849112411**, Pages **35849112381** passed.
+- Complex-document run **35849681042** stopped on unused TypeScript imports after all tests passed; cleanup then passed in **35849925654**, Pages **35849925712**.
+- Final tree/security/analytical alignment: `Validate starter` **35850244812**, Pages **35850244989** passed.
 
 ---
 
@@ -356,69 +320,123 @@ Additional routed transaction:
 
 ## Objective
 
-Make the system resilient enough to remain consistent as new projects and modules are added.
+Make the system resilient enough to remain consistent as new projects and modules are added. This phase is also the final visual-polish pass: spacing rhythm, overflow behavior, legacy styling collisions, responsive composition, focus/keyboard semantics, and edge-state loopholes must be corrected rather than hidden with page-specific patches.
 
 ## Required QA matrix
 
 ### Theme / runtime
-- [ ] Light
-- [ ] Dark
-- [ ] System
-- [ ] Runtime primary/accent changes
-- [ ] Runtime typography changes
-- [ ] Compact/comfortable density
-- [ ] Radius/content width changes
-- [ ] Fast/normal motion
-- [ ] OS reduced motion
+- [x] Light token/runtime contract
+- [x] Dark token/runtime contract
+- [x] System-mode resolution contract
+- [x] Runtime primary/accent changes
+- [x] Runtime typography changes
+- [x] Compact/comfortable density
+- [x] Radius/content width changes
+- [x] Fast/normal motion
+- [x] OS reduced-motion veto remains centralized
 
 ### Responsive
-- [ ] Desktop wide
-- [ ] Desktop constrained
-- [ ] Tablet
-- [ ] Mobile/narrow shell fallback where supported
-- [ ] Modal/drawer/table/document overflow behavior
+- [x] Desktop wide contract
+- [x] Desktop constrained contract
+- [x] Tablet contract
+- [x] Mobile/narrow shell fallback contract
+- [x] Modal/drawer/table/document overflow guards
+- [-] Final routed-screen consistency sweep
 
 ### Accessibility
-- [ ] Keyboard navigation contracts
-- [ ] Visible focus
-- [ ] Tooltip/aria labels for icon-only actions
-- [ ] Semantic labels for status beyond color
-- [ ] Modal/drawer focus management
-- [ ] Escape/close behavior
-- [ ] Form errors associated to controls
-- [ ] Sufficient contrast strategy in light/dark modes
-- [ ] Reduced-motion behavior
+- [x] Visible focus contract
+- [x] Tooltip/aria naming for shared icon-only actions
+- [x] Semantic status text remains present beyond color
+- [x] Modal/drawer focus management remains delegated to Ant Design primitives
+- [x] Escape/close behavior for overlays and mobile navigation
+- [x] Form validation remains Ant Form-associated
+- [x] Light/dark semantic contrast strategy test
+- [x] Reduced-motion behavior
+- [-] Final keyboard/interaction source audit across routed screens
 
 ### Data/workflow
-- [ ] Empty
-- [ ] Loading
-- [ ] Error
-- [ ] Large lists
-- [ ] Long labels/values
-- [ ] Bulk selection
-- [ ] URL query restoration
-- [ ] Server-mode query contract
-- [ ] Approval exception/rejection flows
+- [x] Empty-state contract
+- [x] Loading-state contract
+- [x] Error-state contract
+- [x] Large-list virtualization contract
+- [x] Long-label/value overflow guards in shared primitives/overlays
+- [x] Bulk-selection contract
+- [x] URL query restoration contract
+- [x] Server-mode query contract
+- [x] Approval rejection/reason contracts retained from Phase 7
+- [x] Prevent hiding every enterprise-table data column
 
 ### Enforcement
-- [ ] Automated no-decorative-gradient guard remains active
-- [ ] Automated raw shared-theme-color guard remains active
-- [ ] Shared-primitives contract tests
-- [ ] Overlay contract tests
-- [ ] Enterprise-data-workspace contract tests
-- [ ] Workflow contract tests
-- [ ] Route/floorplan metadata tests
-- [ ] Document-workspace contract tests
-- [ ] Settings contract tests
-- [ ] TypeScript build
-- [ ] GitHub Actions
-- [ ] GitHub Pages preview
+- [x] Automated no-decorative-gradient guard expanded across all active floorplan CSS
+- [x] Automated raw shared-theme-color guard expanded across all active floorplan CSS
+- [x] Shared-primitives contract tests
+- [x] Overlay contract tests
+- [x] Enterprise-data-workspace contract tests
+- [x] Workflow contract tests
+- [x] Route/floorplan metadata tests
+- [x] Document-workspace contract tests
+- [x] Settings contract tests
+- [x] Runtime matrix + contrast tests
+- [x] Dead-code / legacy-global-CSS regression tests
+- [x] TypeScript build through current Phase 10 batches
+- [x] GitHub Actions through current Phase 10 batches
+- [x] GitHub Pages preview through current Phase 10 batches
+
+## Phase 10 implementation record — 2026-09-23
+
+### Sub-stage A — CSS ownership, spacing rhythm, and dead-code cleanup
+
+Completed:
+- Removed competing legacy shell/settings rules from `src/styles.css` rather than layering more overrides on top.
+- Rebuilt active global spacing and typography rules around runtime tokens.
+- Rebuilt `src/erp.css` active ERP spacing around runtime semantic/spacing/radius tokens.
+- Removed the global Ant Tabs margin override that leaked spacing into drawers/modals/workspaces.
+- Hardened intent-modal internal padding, mobile max-height, drawer max-width, long-content wrapping, and narrow-screen spacing.
+- Hardened shared primitives against min-width/overflow issues and improved filter/action wrapping.
+- Reduced `InventoryWorkspaces.tsx` to its only active responsibility: analytical Stock Levels.
+- Corrected the Low Stock quick view so zero-stock records belong only to the dedicated Out of Stock view.
+- Removed dead competing artifacts: `ModulePage.tsx`, `AccountingWorkspaces.tsx`, `JournalEntriesPage.tsx`, and `journal-v2.css`.
+- Removed obsolete `journal-v2.css` from the runtime bundle.
+
+Validation:
+- `Validate starter` **35852040919** passed tests + production build.
+- `Deploy v2.0 preview` **35852040636** passed build + Pages deployment.
+
+### Sub-stage B — accessibility, responsive, runtime, and edge-state enforcement
+
+Completed:
+- Added `tests/qa-enforcement.test.mjs`.
+- Added runtime matrix coverage across mode, density, typography, radius, color, content-width and motion configurations.
+- Added semantic foreground/background contrast assertions for light/dark token output.
+- Expanded gradient/raw-color guards to Settings, Workflow, Document and other active CSS.
+- Added regression guards so removed legacy shell/settings selectors and dead workspace files do not return.
+- Added mobile-navigation `aria-expanded`/`aria-controls` state and explicit shell navigation target.
+- Improved theme-toggle accessible naming and decorative keyboard-shortcut semantics.
+- Added explicit document/section `aria-labelledby` relationships and document-summary labeling.
+- Added `aria-busy` and workspace labeling to `EnterpriseDataTable`.
+- Replaced the active data-filter inline width with a reusable responsive class.
+- Prevented column visibility controls from hiding every business-data column.
+- Added automated responsive-contract checks for shell, overlays, data primitives and documents.
+- Kept reduced-motion veto centralized in `src/theme/motion.css` instead of duplicating it globally.
+
+Validation:
+- `Validate starter` **35852479144** passed expanded tests + production build.
+- `Deploy v2.0 preview` **35852479213** passed preview build + Pages deployment.
+
+## Remaining work before Phase 10 completion
+
+1. Final routed-screen consistency sweep for residual spacing/interaction drift, especially hierarchy/document/security/workflow screens.
+2. Remove safe residual decorative-motion/legacy compatibility rules where active source no longer needs them.
+3. Recheck constrained desktop/mobile action wrapping and document line editors after the CSS ownership cleanup.
+4. Review keyboard semantics of custom non-Ant interactive elements without introducing unsupported ARIA patterns.
+5. Run one final full tests/build/Actions/Pages gate.
+6. Mark the phase complete only after this final sweep passes.
 
 ## Exit criteria
 
 The starter can be cloned into a new ERP/SaaS project and extended without developers needing to recreate layout, styling, motion, table, overlay, document, or workflow rules.
 
-**Status: [ ] Not started.**
+**Status: [-] In progress.**
 
 ---
 
@@ -440,12 +458,12 @@ Preview: `https://ahmaduarmash.github.io/erp-template/`
 
 ## 9. Cleanup Policy / Known Debt
 
-- `DataTable`/`DomainTable` remain for legacy or document-list screens; they must not evolve into a competing generic enterprise table system.
-- Compatibility CSS aliases remain until final cleanup proves no consumers require them.
-- `ModulePage` remains as an unused/compatibility implementation artifact and is not the architecture for routed complex modules; Phase 10 should verify safe removal or document why it remains.
-- Workflow history/ownership currently persist inside demo records; API-backed projects should map the same contract to authoritative server workflow/audit data.
-- Legacy `.settings-*` rules in `src/styles.css` should be removed if Phase 10 proves the dedicated `src/pages/settings.css` owns all current Settings styling.
-- Older workspaces in `src/pages/erp/InventoryWorkspaces.tsx` and `AccountingWorkspaces.tsx` may remain as dead compatibility code after routed wrappers moved to new implementations; Phase 10 should identify and remove safe dead duplicates instead of keeping competing examples.
+- `DataTable`/`DomainTable` remain only for legacy or document-list screens; they must not evolve into a competing generic enterprise table system.
+- Compatibility token aliases remain while active compatibility CSS still consumes them; remove only when the final active-source audit proves safe.
+- Workflow history/ownership currently persists inside demo records; API-backed projects should map the same contract to authoritative server workflow/audit data.
+- `design-v2.css` remains a compatibility presentation layer; Phase 10 final sweep must remove dead selectors/decorative motion from it where safe rather than creating another replacement layer.
+- `coa-v2.css` remains the active Chart-of-Accounts-specific hierarchy layout and must stay token-driven.
+- `ModulePage`, dead Accounting workspaces, obsolete Journal page/CSS, old Settings globals, and inactive Inventory workspace duplicates were removed during Phase 10.
 
 ---
 
@@ -467,31 +485,27 @@ Added reusable workflow state/audit/decision architecture, migrated Expenses to 
 Productized Settings around the existing runtime engine, added persisted Brand and effective motion policy, corrected a stale recovery assertion, and passed CI/Pages.
 
 ### 2026-09-23 — Phase 9 completed
-- Migrated Customers/Suppliers to a reusable Master + Detail floorplan.
-- Added explicit `WORKFLOW` route classification and analytical Dashboard classification.
-- Added reusable full-page Document Workspace and migrated transfers/orders/invoices/journals/payments.
-- Preserved domain-correct Stock Levels, Warehouse hierarchy, and Chart of Accounts hierarchy instead of forcing generic CRUD.
-- Hardened Chart of Accounts create/edit/deactivate interactions.
-- Hardened Security inspection/invite/edit separation.
-- CI caught and stopped a TypeScript unused-import regression before later migration batches were stacked.
-- Final tests/build/Pages deployment passed.
+Migrated master/detail, document, hierarchy, analytical and security screens to explicit floorplans; CI caught an unused-import regression; final tests/build/Pages deployment passed.
+
+### 2026-09-23 — Phase 10 sub-stage A completed
+Removed competing global CSS generations and dead routed-workspace artifacts, consolidated spacing around runtime tokens, fixed narrow overlay/table behavior, and passed CI/Pages.
+
+### 2026-09-23 — Phase 10 sub-stage B completed
+Added runtime/contrast/accessibility/responsive/edge-state enforcement tests, hardened shell and document semantics, closed enterprise-table column/overflow loopholes, and passed CI/Pages.
 
 ---
 
 ## 11. Immediate Next Stage
 
-**Next: Phase 10 — QA, Accessibility & Design-System Enforcement.**
+**Continue Phase 10 final routed-screen consistency sweep.**
 
 Before marking the roadmap complete:
-1. audit current shared/component CSS and remove safe dead duplicate styling/components,
-2. expand automated design-system guards across all active shared/floorplan CSS,
-3. enforce icon-only accessible naming and semantic status behavior,
-4. verify overlay/document responsive contracts and focus/keyboard assumptions,
-5. verify theme/runtime combinations through resolver/token tests and rendered-contract checks,
-6. exercise data/workflow edge-state contracts including long content and URL query restoration,
-7. confirm no routed module falls back to generic `ModulePage`,
-8. remove safe dead legacy workspaces or explicitly document retained compatibility code,
-9. run the full test/build/CI/Pages gate and only then mark Phase 10 complete.
+1. inspect residual active compatibility CSS for dead/decorative selectors,
+2. correct any remaining hierarchy/document/security/workflow spacing drift,
+3. recheck constrained action bars and mobile document overflow,
+4. preserve only ARIA semantics supported by actual keyboard behavior,
+5. run the complete test/build/CI/Pages gate,
+6. update this roadmap with the final state and remaining intentionally retained compatibility boundaries.
 
 ---
 
