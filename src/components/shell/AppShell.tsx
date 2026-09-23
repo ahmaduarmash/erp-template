@@ -21,9 +21,7 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
   const workspace = useWorkspace();
   const location = useLocation();
   const sound = useSound();
-  const [secondaryCollapsed, setSecondaryCollapsed] = useState(
-    config.layout.sidebarDefaultCollapsed,
-  );
+  const [secondaryCollapsed, setSecondaryCollapsed] = useState(config.layout.sidebarDefaultCollapsed);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
 
   useEffect(() => {
@@ -48,15 +46,13 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div
-      className={`app-shell ${secondaryCollapsed ? 'secondary-collapsed' : ''} ${
-        mobileNavigationOpen ? 'nav-open' : ''
-      }`}
+      className={`app-shell ${secondaryCollapsed ? 'secondary-collapsed' : ''} ${mobileNavigationOpen ? 'nav-open' : ''}`}
       onClickCapture={(event) => {
         if ((event.target as HTMLElement).closest('button,a')) sound('click');
       }}
     >
       <NotificationReceiver />
-      <div className="shell-navigation">
+      <div className="shell-navigation" id="shell-navigation">
         <PrimaryRail onNavigate={() => setMobileNavigationOpen(false)} />
         <SecondaryNav
           collapsed={secondaryCollapsed}
@@ -64,30 +60,32 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
           onNavigate={() => setMobileNavigationOpen(false)}
         />
       </div>
-      {mobileNavigationOpen && (
+      {mobileNavigationOpen ? (
         <button
           className="navigation-backdrop"
           onClick={() => setMobileNavigationOpen(false)}
           aria-label="Close navigation"
+          tabIndex={-1}
         />
-      )}
+      ) : null}
       <div className="shell-main">
         <Topbar
           toggleMobile={() => setMobileNavigationOpen((value) => !value)}
+          mobileNavigationOpen={mobileNavigationOpen}
           toggleSecondary={() => setSecondaryCollapsed((value) => !value)}
           secondaryCollapsed={secondaryCollapsed}
           onLogout={onLogout}
         />
         <WorkspaceTabs />
-        <main className={`main-content ${config.layout.contentWidth === 'boxed' ? 'boxed' : ''}`}>
-          {(storageError || workspace.storageError) && (
+        <main className={`main-content ${config.layout.contentWidth === 'boxed' ? 'boxed' : ''}`} id="main-content">
+          {(storageError || workspace.storageError) ? (
             <Alert
               className="mb-4"
               type="warning"
               showIcon
               message="Browser storage is unavailable. Changes will last only for this session."
             />
-          )}
+          ) : null}
           <PageTransition transitionKey={location.pathname}>
             <Suspense fallback={<PageSkeleton />}>
               <Outlet />

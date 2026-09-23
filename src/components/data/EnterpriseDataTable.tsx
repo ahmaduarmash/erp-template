@@ -1,20 +1,6 @@
 import { useEffect, useMemo, useState, type Key, type ReactNode } from 'react';
-import {
-  Alert,
-  Button,
-  Input,
-  Select,
-  Space,
-  Table,
-  type TableColumnsType,
-  type TableProps,
-} from 'antd';
-import {
-  DownloadOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { Alert, Button, Input, Select, Space, Table, type TableColumnsType, type TableProps } from 'antd';
+import { DownloadOutlined, ReloadOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
 import { AnimatedDropdown } from '../../lib/motion/overlays';
 import { downloadCsv } from '../../lib/csv';
@@ -41,9 +27,7 @@ export type DataFilter<T> = {
 export type SavedDataView = {
   key: string;
   label: string;
-  query: Partial<Omit<DataWorkspaceQuery, 'filters'>> & {
-    filters?: Record<string, string | undefined>;
-  };
+  query: Partial<Omit<DataWorkspaceQuery, 'filters'>> & { filters?: Record<string, string | undefined> };
 };
 
 export type BulkAction<T> = {
@@ -121,13 +105,9 @@ export function EnterpriseDataTable<T extends { id: string }>({
   const [query, setQuery] = useState<DataWorkspaceQuery>({
     search: urlState ? searchParams.get(`${prefix}q`) ?? '' : '',
     page: urlState ? numberParam(searchParams.get(`${prefix}page`), 1) : 1,
-    pageSize: urlState
-      ? numberParam(searchParams.get(`${prefix}size`), config.table.defaultPageSize)
-      : config.table.defaultPageSize,
+    pageSize: urlState ? numberParam(searchParams.get(`${prefix}size`), config.table.defaultPageSize) : config.table.defaultPageSize,
     sortKey: urlState ? searchParams.get(`${prefix}sort`) ?? undefined : undefined,
-    sortOrder: urlState
-      ? (searchParams.get(`${prefix}order`) as DataWorkspaceQuery['sortOrder']) ?? undefined
-      : undefined,
+    sortOrder: urlState ? (searchParams.get(`${prefix}order`) as DataWorkspaceQuery['sortOrder']) ?? undefined : undefined,
     filters: initialFilters,
   });
   const [selected, setSelected] = useState<Key[]>([]);
@@ -173,23 +153,10 @@ export function EnterpriseDataTable<T extends { id: string }>({
   const resolvedColumns = useMemo<TableColumnsType<T>>(() => {
     const visible = columns.filter((column) => !hidden.includes(String(column.key)));
     if (!rowActions) return visible;
-    return [
-      ...visible,
-      {
-        key: 'workspace-actions',
-        title: '',
-        fixed: 'right',
-        width: 88,
-        align: 'right',
-        render: (_, row) => rowActions(row),
-      },
-    ];
+    return [...visible, { key: 'workspace-actions', title: '', fixed: 'right', width: 88, align: 'right', render: (_, row) => rowActions(row) }];
   }, [columns, hidden, rowActions]);
 
-  const selectedRows = useMemo(
-    () => rows.filter((row) => selected.includes(row.id)),
-    [rows, selected],
-  );
+  const selectedRows = useMemo(() => rows.filter((row) => selected.includes(row.id)), [rows, selected]);
 
   const updateQuery = (patch: Partial<DataWorkspaceQuery>) => {
     setQuery((current) => ({ ...current, ...patch }));
@@ -199,22 +166,12 @@ export function EnterpriseDataTable<T extends { id: string }>({
   const applySavedView = (key: string) => {
     const view = savedViews.find((item) => item.key === key);
     if (!view) return;
-    setQuery((current) => ({
-      ...current,
-      ...view.query,
-      filters: { ...current.filters, ...(view.query.filters ?? {}) },
-      page: 1,
-    }));
+    setQuery((current) => ({ ...current, ...view.query, filters: { ...current.filters, ...(view.query.filters ?? {}) }, page: 1 }));
     setSelected([]);
   };
 
   const reset = () => {
-    setQuery({
-      search: '',
-      page: 1,
-      pageSize: config.table.defaultPageSize,
-      filters: Object.fromEntries(filters.map((filter) => [filter.key, undefined])),
-    });
+    setQuery({ search: '', page: 1, pageSize: config.table.defaultPageSize, filters: Object.fromEntries(filters.map((filter) => [filter.key, undefined])) });
     setSelected([]);
   };
 
@@ -224,12 +181,7 @@ export function EnterpriseDataTable<T extends { id: string }>({
     downloadCsv(
       exportName ?? workspaceKey,
       exportColumns.map((column) => String(column.title ?? column.key ?? '')),
-      source.map((row) =>
-        exportColumns.map((column) => {
-          const key = columnValueKey(column);
-          return (row as Record<string, unknown>)[key];
-        }),
-      ),
+      source.map((row) => exportColumns.map((column) => (row as Record<string, unknown>)[columnValueKey(column)])),
     );
   };
 
@@ -246,14 +198,12 @@ export function EnterpriseDataTable<T extends { id: string }>({
   const hasFilters = Boolean(query.search.trim()) || Object.values(query.filters).some(Boolean);
 
   return (
-    <section className="panel enterprise-data-workspace" aria-busy={loading || refreshLoading}>
+    <section className="panel enterprise-data-workspace" aria-busy={Boolean(loading || refreshLoading)} aria-label={`${workspaceKey} data workspace`}>
       {error ? <Alert type="error" showIcon message="Unable to load records" description={error} /> : null}
       {savedViews.length ? (
         <div className="enterprise-saved-views" aria-label="Saved views">
           {savedViews.map((view) => (
-            <Button key={view.key} size="small" onClick={() => applySavedView(view.key)}>
-              {view.label}
-            </Button>
+            <Button key={view.key} size="small" onClick={() => applySavedView(view.key)}>{view.label}</Button>
           ))}
         </div>
       ) : null}
@@ -268,71 +218,45 @@ export function EnterpriseDataTable<T extends { id: string }>({
             aria-label="Search table"
           />
         }
-        filters={
-          filters.length ? (
-            <Space wrap size={8}>
-              {filters.map((filter) => (
-                <Select
-                  allowClear
-                  key={String(filter.key)}
-                  aria-label={filter.label}
-                  placeholder={filter.placeholder ?? filter.label}
-                  value={query.filters[String(filter.key)]}
-                  options={filter.options}
-                  onChange={(value) =>
-                    updateQuery({
-                      page: 1,
-                      filters: { ...query.filters, [String(filter.key)]: value },
-                    })
-                  }
-                  style={{ minWidth: 132 }}
-                />
-              ))}
-              {hasFilters ? <Button onClick={reset}>Reset</Button> : null}
-            </Space>
-          ) : null
-        }
+        filters={filters.length ? (
+          <Space wrap size={8}>
+            {filters.map((filter) => (
+              <Select
+                allowClear
+                key={String(filter.key)}
+                className="enterprise-filter-select"
+                aria-label={filter.label}
+                placeholder={filter.placeholder ?? filter.label}
+                value={query.filters[String(filter.key)]}
+                options={filter.options}
+                onChange={(value) => updateQuery({ page: 1, filters: { ...query.filters, [String(filter.key)]: value } })}
+              />
+            ))}
+            {hasFilters ? <Button onClick={reset}>Reset</Button> : null}
+          </Space>
+        ) : null}
         actions={
           <Space wrap>
-            {selectedRows.length && bulkActions.length
-              ? bulkActions.map((action) => (
-                  <Button
-                    key={action.key}
-                    danger={action.danger}
-                    onClick={() => action.onClick(selectedRows)}
-                  >
-                    {action.label} ({selectedRows.length})
-                  </Button>
-                ))
-              : null}
-            {onRefresh ? (
-              <Button icon={<ReloadOutlined />} loading={refreshLoading} onClick={() => void onRefresh()}>
-                Refresh
+            {selectedRows.length && bulkActions.length ? bulkActions.map((action) => (
+              <Button key={action.key} danger={action.danger} onClick={() => action.onClick(selectedRows)}>
+                {action.label} ({selectedRows.length})
               </Button>
-            ) : null}
+            )) : null}
+            {onRefresh ? <Button icon={<ReloadOutlined />} loading={refreshLoading} onClick={() => void onRefresh()}>Refresh</Button> : null}
             <AnimatedDropdown
               trigger={['click']}
               menu={{
                 selectable: false,
-                items: columns.map((column) => ({
-                  key: String(column.key),
-                  label: `${hidden.includes(String(column.key)) ? '' : '✓ '} ${String(column.title ?? column.key)}`,
-                })),
-                onClick: ({ key }) =>
-                  setHidden((current) =>
-                    current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
-                  ),
+                items: columns.map((column) => ({ key: String(column.key), label: `${hidden.includes(String(column.key)) ? '' : '✓ '} ${String(column.title ?? column.key)}` })),
+                onClick: ({ key }) => setHidden((current) => {
+                  const next = current.includes(key) ? current.filter((item) => item !== key) : [...current, key];
+                  return columns.every((column) => next.includes(String(column.key))) ? current : next;
+                }),
               }}
             >
-              <Button icon={<SettingOutlined />} aria-label="Choose visible columns">
-                Columns
-              </Button>
+              <Button icon={<SettingOutlined />} aria-label="Choose visible columns">Columns</Button>
             </AnimatedDropdown>
-            {exportName ? (
-              <Button icon={<DownloadOutlined />} onClick={exportRows}>
-                Export
-              </Button>
-            ) : null}
+            {exportName ? <Button icon={<DownloadOutlined />} onClick={exportRows}>Export</Button> : null}
             {extraActions}
           </Space>
         }
@@ -355,17 +279,9 @@ export function EnterpriseDataTable<T extends { id: string }>({
         onChange={handleChange}
         onRow={onOpen ? (row) => ({ onDoubleClick: () => onOpen(row) }) : undefined}
         virtual={mode === 'client' && filteredRows.length > 200}
-        scroll={{
-          x: Math.max(960, resolvedColumns.length * 150),
-          y: mode === 'client' && filteredRows.length > 200 ? 560 : undefined,
-        }}
+        scroll={{ x: Math.max(960, resolvedColumns.length * 150), y: mode === 'client' && filteredRows.length > 200 ? 560 : undefined }}
         locale={{
-          emptyText: (
-            <EmptyState
-              title={emptyTitle}
-              description={hasFilters ? emptyDescription : 'There are no records in this workspace yet.'}
-            />
-          ),
+          emptyText: <EmptyState title={emptyTitle} description={hasFilters ? emptyDescription : 'There are no records in this workspace yet.'} />,
         }}
         size={config.layout.density === 'compact' ? 'small' : 'middle'}
       />

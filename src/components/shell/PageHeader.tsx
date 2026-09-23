@@ -1,5 +1,6 @@
 import { Breadcrumb } from 'antd';
 import type { ReactNode } from 'react';
+
 export function PageHeader({
   title,
   description,
@@ -14,13 +15,11 @@ export function PageHeader({
   return (
     <header className="page-header">
       <div>
-        <Breadcrumb
-          items={[{ title: 'Workspace' }, ...(group ? [{ title: group }] : []), { title }]}
-        />
+        <Breadcrumb items={[{ title: 'Workspace' }, ...(group ? [{ title: group }] : []), { title }]} />
         <h1>{title}</h1>
-        {description && <p className="muted">{description}</p>}
+        {description ? <p className="muted">{description}</p> : null}
       </div>
-      <div className="header-actions">{action}</div>
+      {action ? <div className="header-actions">{action}</div> : null}
     </header>
   );
 }

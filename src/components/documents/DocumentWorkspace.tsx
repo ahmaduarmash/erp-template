@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Button, Space } from 'antd';
 import { MotionSurface } from '../../lib/motion';
@@ -27,29 +27,32 @@ export function DocumentWorkspace({
   sidebar?: ReactNode;
   footer?: ReactNode;
 }) {
+  const titleId = useId();
   return (
     <MotionSurface page>
-      <section className="document-workspace" aria-label="Document workspace">
+      <section className="document-workspace" aria-labelledby={titleId}>
         <header className="document-workspace-header">
           <div className="document-workspace-heading">
             <Button type="text" icon={<ArrowLeftOutlined />} onClick={onBack} aria-label="Back to document list" />
             <div>
               <div className="document-workspace-title-row">
-                <h1>{title}</h1>
+                <h1 id={titleId}>{title}</h1>
                 {status}
               </div>
               {subtitle ? <p>{subtitle}</p> : null}
               {reference ? <span className="document-workspace-reference">{reference}</span> : null}
             </div>
           </div>
-          <Space wrap>
-            {secondaryActions}
-            {primaryAction}
-          </Space>
+          {(secondaryActions || primaryAction) ? (
+            <Space wrap className="document-workspace-actions">
+              {secondaryActions}
+              {primaryAction}
+            </Space>
+          ) : null}
         </header>
         <div className={sidebar ? 'document-workspace-layout has-sidebar' : 'document-workspace-layout'}>
           <main className="document-workspace-main">{children}</main>
-          {sidebar ? <aside className="document-workspace-sidebar">{sidebar}</aside> : null}
+          {sidebar ? <aside className="document-workspace-sidebar" aria-label="Document summary">{sidebar}</aside> : null}
         </div>
         {footer ? <footer className="document-workspace-footer">{footer}</footer> : null}
       </section>
@@ -68,11 +71,12 @@ export function DocumentSection({
   extra?: ReactNode;
   children: ReactNode;
 }) {
+  const titleId = useId();
   return (
-    <section className="document-section">
+    <section className="document-section" aria-labelledby={titleId}>
       <header className="document-section-header">
         <div>
-          <h2>{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           {description ? <p>{description}</p> : null}
         </div>
         {extra}
