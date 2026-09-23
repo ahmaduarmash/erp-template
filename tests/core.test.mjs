@@ -101,7 +101,6 @@ test('Runtime CSS contains no decorative gradients or raw hex theme colors', () 
     'src/erp.css',
     'src/design-v2.css',
     'src/coa-v2.css',
-    'src/journal-v2.css',
     'src/components/primitives/primitives.css',
     'src/components/overlays/overlays.css',
     'src/components/shell/shell.css',

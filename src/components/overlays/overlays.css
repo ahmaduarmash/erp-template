@@ -4,9 +4,10 @@
 }
 
 .intent-modal .ant-modal-header {
-  margin-bottom: 0;
-  padding-bottom: var(--space-3);
+  margin: 0;
+  padding: var(--space-5) var(--space-6) var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
 }
 
 .intent-modal .ant-modal-body {
@@ -14,15 +15,17 @@
 }
 
 .intent-modal .ant-modal-footer {
-  margin-top: 0;
-  padding-top: var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-6) var(--space-4);
   border-top: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
 }
 
 .intent-modal-title {
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
+  min-width: 0;
   padding-right: var(--space-6);
 }
 
@@ -33,6 +36,7 @@
 .intent-modal-title strong,
 .intent-modal-title small {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .intent-modal-title strong {
@@ -50,9 +54,10 @@
 }
 
 .intent-modal-body {
-  max-height: min(64vh, 640px);
+  max-height: min(68vh, 680px);
   overflow-y: auto;
-  padding: var(--space-4) 0;
+  overscroll-behavior: contain;
+  padding: var(--space-5) var(--space-6);
   scrollbar-width: thin;
 }
 
@@ -63,12 +68,21 @@
   gap: var(--space-3);
 }
 
+.intent-modal-footer > div:first-child {
+  min-width: 0;
+}
+
+.record-drawer .ant-drawer-content-wrapper {
+  max-width: 100vw;
+}
+
 .record-drawer .ant-drawer-header {
   display: none;
 }
 
 .record-drawer .ant-drawer-body {
   padding: 0;
+  overflow-wrap: anywhere;
 }
 
 .record-drawer .ant-drawer-footer {
@@ -80,11 +94,11 @@
 .record-drawer-toolbar {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   justify-content: flex-end;
   min-height: calc(var(--control-height) + var(--space-2));
-  padding: var(--space-2) var(--space-3) 0;
+  padding: var(--space-2) var(--space-4) 0;
   background: var(--bg-surface);
 }
 
@@ -121,6 +135,7 @@
   color: var(--text-primary);
   font-size: var(--text-sm);
   line-height: var(--line-height-tight);
+  overflow-wrap: anywhere;
 }
 
 .confirm-action-copy p {
@@ -128,6 +143,7 @@
   color: var(--text-muted);
   font-size: var(--text-xs);
   line-height: var(--line-height-normal);
+  overflow-wrap: anywhere;
 }
 
 .confirm-action-buttons {
@@ -138,12 +154,36 @@
 }
 
 @media (max-width: 700px) {
+  .intent-modal .ant-modal-header,
+  .intent-modal-body,
+  .intent-modal .ant-modal-footer {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .intent-modal-body {
+    max-height: 70dvh;
+  }
+
   .intent-modal-footer {
     align-items: stretch;
     flex-direction: column;
   }
 
   .intent-modal-footer > .ant-space {
+    width: 100%;
     justify-content: flex-end;
+  }
+
+  .record-drawer-toolbar {
+    padding-inline: var(--space-3);
+  }
+
+  .record-drawer .ui-object-header {
+    margin-inline: var(--space-3);
+  }
+
+  .record-drawer-body {
+    padding: 0 var(--space-3) var(--space-5);
   }
 }
