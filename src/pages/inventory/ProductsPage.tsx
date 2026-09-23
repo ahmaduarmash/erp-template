@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Button, Descriptions, Drawer, Form, Input, InputNumber, Select, Switch, Tabs, type TableColumnsType } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Descriptions, Form, Input, InputNumber, Select, Switch, Tabs, type TableColumnsType } from 'antd';
+import { AppstoreOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { MotionSurface } from '../../lib/motion';
 import { useWorkspace } from '../../data/WorkspaceProvider';
 import type { RecordData } from '../../data/modules';
 import { useFeedback } from '../../components/feedback';
 import { ActionMenu, DomainTable, EntityCell, KpiStrip, MoneyCell, SemanticStatus, StockProgress, formatMoney } from '../../components/erp/ErpPrimitives';
+import { CreateModal, EditModal, RecordDrawer } from '../../components/overlays';
+import { IconChip } from '../../components/primitives';
 
 export default function ProductsPage() {
   const workspace = useWorkspace();
@@ -18,7 +20,7 @@ export default function ProductsPage() {
   const [form] = Form.useForm();
 
   const columns = useMemo<TableColumnsType<RecordData>>(() => [
-    { key: 'name', title: 'Product', dataIndex: 'name', width: 260, render: (_, row) => <EntityCell title={row.name} subtitle={row.sku} /> },
+    { key: 'name', title: 'Product', dataIndex: 'name', width: 260, render: (_, row) => <EntityCell title={row.name} subtitle={row.sku} onClick={() => setSelected(row)} /> },
     { key: 'category', title: 'Category', dataIndex: 'category', width: 150 },
     { key: 'quantity', title: 'Stock / reorder', width: 170, render: (_, row) => <StockProgress current={Number(row.quantity)} target={20} /> },
     { key: 'available', title: 'Available', width: 110, render: (_, row) => Math.max(0, Number(row.quantity) - 6) },
@@ -33,14 +35,20 @@ export default function ProductsPage() {
     setEditorOpen(true);
   };
 
-  const save = async () => {
-    const values = await form.validateFields();
-    workspace.save('products', { id: editing?.id ?? crypto.randomUUID(), ...values });
+  const closeEditor = () => {
     setEditorOpen(false);
     setEditing(null);
     form.resetFields();
-    feedback.success(`Product ${editing ? 'updated' : 'created'}`);
   };
+
+  const save = async () => {
+    const values = await form.validateFields();
+    workspace.save('products', { id: editing?.id ?? crypto.randomUUID(), ...values });
+    feedback.success(`Product ${editing ? 'updated' : 'created'}`);
+    closeEditor();
+  };
+
+  const EditorModal = editing ? EditModal : CreateModal;
 
   return (
     <MotionSurface page>
@@ -69,7 +77,16 @@ export default function ProductsPage() {
         ]} />}
       />
 
-      <Drawer width={680} open={!!selected} title={String(selected?.name ?? 'Product')} onClose={() => setSelected(null)}>
+      <RecordDrawer
+        size="lg"
+        open={!!selected}
+        title={String(selected?.name ?? 'Product')}
+        subtitle={selected ? `SKU ${selected.sku}` : undefined}
+        status={selected ? <SemanticStatus value={String(selected.status)} /> : undefined}
+        leading={<IconChip icon={<AppstoreOutlined />} tone="primary" size="lg" />}
+        actions={selected ? <Button onClick={() => { openEditor(selected); setSelected(null); }}>Edit product</Button> : undefined}
+        onClose={() => setSelected(null)}
+      >
         {selected ? <Tabs items={[
           { key: 'overview', label: 'Overview', children: <Descriptions column={2} items={[
             { key: 'sku', label: 'SKU', children: selected.sku },
@@ -85,9 +102,18 @@ export default function ProductsPage() {
           ]} /> },
           { key: 'activity', label: 'Activity', children: <p className="muted">Stock movements, price changes and audit history will appear here through the repository adapter.</p> },
         ]} /> : null}
-      </Drawer>
+      </RecordDrawer>
 
-      <Drawer width={760} open={editorOpen} title={editing ? 'Edit product' : 'New product'} onClose={() => setEditorOpen(false)} extra={<Button type="primary" onClick={() => void save()}>Save product</Button>}>
+      <EditorModal
+        open={editorOpen}
+        title={editing ? 'Edit product' : 'New product'}
+        description={editing ? 'Update product master data and keep the catalog context intact.' : 'Create a product without leaving the catalog workspace.'}
+        icon={<AppstoreOutlined />}
+        onCancel={closeEditor}
+        onSubmit={() => void save()}
+        submitLabel={editing ? 'Save product' : 'Create product'}
+        width={760}
+      >
         <Form form={form} layout="vertical">
           <Tabs items={[
             { key: 'general', label: 'General', children: <div className="form-grid">
@@ -108,7 +134,7 @@ export default function ProductsPage() {
             </div> },
           ]} />
         </Form>
-      </Drawer>
+      </EditorModal>
     </MotionSurface>
   );
 }
