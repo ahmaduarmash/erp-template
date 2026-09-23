@@ -1,2 +1,1 @@
-import { WarehousesWorkspace } from '../erp/InventoryWorkspaces';
-export default WarehousesWorkspace;
+export { default } from './WarehousesPage';

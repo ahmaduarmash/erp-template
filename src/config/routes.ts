@@ -68,7 +68,7 @@ export const routeGroups: RouteGroupDefinition[] = [
 ];
 
 export const routeRegistry: RouteDefinition[] = [
-  { key: 'dashboard', path: '/dashboard', title: 'Overview', description: 'Operational summary, activity and attention queues', icon: 'dashboard', group: 'Overview', pageKind: 'CUSTOM' },
+  { key: 'dashboard', path: '/dashboard', title: 'Overview', description: 'Operational summary, activity and attention queues', icon: 'dashboard', group: 'Overview', pageKind: 'ANALYTICAL' },
   { key: 'products', path: '/inventory/products', title: 'Products', description: 'Product catalog, pricing and inventory identity', icon: 'products', group: 'Inventory', pageKind: 'MASTER_DETAIL', permission: 'inventory.products.view' },
   { key: 'stock-levels', path: '/inventory/stock-levels', title: 'Stock levels', description: 'Availability, shortages and warehouse stock position', icon: 'stock', group: 'Inventory', pageKind: 'ANALYTICAL', permission: 'inventory.stock.view' },
   { key: 'warehouses', path: '/inventory/warehouses', title: 'Warehouses', description: 'Warehouse and storage-location hierarchy', icon: 'warehouse', group: 'Inventory', pageKind: 'TREE', permission: 'inventory.warehouses.view' },
