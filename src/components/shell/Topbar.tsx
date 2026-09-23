@@ -1,66 +1,96 @@
-import { Avatar, Badge, Button, Dropdown, Empty, Input, Modal, Tooltip } from 'antd';
+import { Avatar, Badge, Button, Empty, Input, Tooltip } from 'antd';
 import {
   BellOutlined,
   DownOutlined,
+  MenuFoldOutlined,
   MenuOutlined,
+  MenuUnfoldOutlined,
   MoonOutlined,
   SearchOutlined,
   SunOutlined,
 } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTemplate } from '../../theme/ThemeProvider';
 import { useWorkspace } from '../../data/WorkspaceProvider';
-import { modules } from '../../data/modules';
+import { routeForPath, routeGroupFor, routeRegistry } from '../../config/routes';
+import { useAuth } from '../../auth/AuthProvider';
+import { AnimatedDropdown, AnimatedModal } from '../../lib/motion/overlays';
+import { ShellIcon } from './ShellIcon';
 
-export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () => void }) {
+export function Topbar({
+  toggleMobile,
+  toggleSecondary,
+  secondaryCollapsed,
+  onLogout,
+}: {
+  toggleMobile: () => void;
+  toggleSecondary: () => void;
+  secondaryCollapsed: boolean;
+  onLogout: () => void;
+}) {
   const { dark, setGroup, config } = useTemplate();
-  const { profile, notices, markRead } = useWorkspace();
+  const { profile, notices, markRead, org } = useWorkspace();
+  const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState(false);
   const [query, setQuery] = useState('');
+  const current = routeForPath(location.pathname);
+  const group = routeGroupFor(current?.group ?? 'Overview');
 
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
-        setSearch((s) => !s);
+        setSearch((value) => !value);
       }
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
   }, []);
 
-  const routes = [
-    { title: 'Overview', path: '/dashboard' },
-    ...modules.map((m) => ({ title: m.title, path: `/${m.group.toLowerCase()}/${m.key}` })),
-    { title: 'Settings', path: '/settings' },
-    { title: 'Profile', path: '/profile' },
-    { title: 'Notifications', path: '/system/notifications' },
-    { title: 'Audit log', path: '/system/audit-log' },
-  ];
-  const filtered = routes.filter((r) => r.title.toLowerCase().includes(query.toLowerCase()));
-  const visibleNotices = notices.filter((n) => config.notifications[n.category]);
+  const searchableRoutes = useMemo(
+    () => routeRegistry.filter((route) => auth.can(route.permission)),
+    [auth],
+  );
+  const filtered = searchableRoutes.filter((route) => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return true;
+    return `${route.title} ${route.description} ${route.group}`.toLowerCase().includes(needle);
+  });
+  const visibleNotices = notices.filter((notice) => config.notifications[notice.category]);
 
   return (
     <>
       <header className="topbar">
-        <Button
-          className="mobile-menu"
-          type="text"
-          icon={<MenuOutlined />}
-          aria-label="Open navigation"
-          onClick={toggle}
-        />
-        <span className="topbar-location">
-          Workspace <span>/</span>{' '}
-          <strong>{routes.find((r) => r.path === location.pathname)?.title || 'Overview'}</strong>
-        </span>
+        <div className="topbar-context">
+          <Button
+            className="mobile-menu"
+            type="text"
+            icon={<MenuOutlined />}
+            aria-label="Open navigation"
+            onClick={toggleMobile}
+          />
+          <Tooltip title={secondaryCollapsed ? 'Show section navigation' : 'Hide section navigation'}>
+            <Button
+              className="secondary-nav-toggle"
+              type="text"
+              icon={secondaryCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              aria-label={secondaryCollapsed ? 'Show section navigation' : 'Hide section navigation'}
+              onClick={toggleSecondary}
+            />
+          </Tooltip>
+          <div className="topbar-location">
+            <span className="topbar-domain">{group.title}</span>
+            <strong>{current?.title ?? 'Workspace'}</strong>
+            <small>{current?.description ?? group.description}</small>
+          </div>
+        </div>
         <div className="topbar-tools">
-          <button className="search-trigger" onClick={() => setSearch(true)}>
+          <button className="search-trigger" onClick={() => setSearch(true)} aria-label="Search workspace">
             <SearchOutlined />
-            <span>Search workspace</span>
+            <span>Search</span>
             <kbd>⌘ K</kbd>
           </button>
           <Tooltip title={dark ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -71,28 +101,31 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
               onClick={() => setGroup('theme', { mode: dark ? 'light' : 'dark' })}
             />
           </Tooltip>
-          <Dropdown
+          <AnimatedDropdown
             trigger={['click']}
             popupRender={() => (
               <div className="notification-dropdown panel">
-                <div className="flex items-center justify-between mb-3">
-                  <strong>Notifications</strong>
+                <div className="notification-dropdown-head">
+                  <div>
+                    <strong>Notifications</strong>
+                    <small>{visibleNotices.filter((notice) => !notice.read).length} unread</small>
+                  </div>
                   <Button size="small" type="text" onClick={() => markRead()}>
                     Mark all read
                   </Button>
                 </div>
                 {visibleNotices.length ? (
-                  visibleNotices.slice(0, 4).map((n) => (
+                  visibleNotices.slice(0, 4).map((notice) => (
                     <button
-                      className={`notice-compact ${n.read ? '' : 'unread'}`}
-                      key={n.id}
+                      className={`notice-compact ${notice.read ? '' : 'unread'}`}
+                      key={notice.id}
                       onClick={() => {
-                        markRead(n.id);
+                        markRead(notice.id);
                         navigate('/system/notifications');
                       }}
                     >
-                      <strong>{n.title}</strong>
-                      <span>{n.detail}</span>
+                      <strong>{notice.title}</strong>
+                      <span>{notice.detail}</span>
                     </button>
                   ))
                 ) : (
@@ -104,12 +137,12 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
               </div>
             )}
           >
-            <Badge count={visibleNotices.filter((n) => !n.read).length} size="small">
+            <Badge count={visibleNotices.filter((notice) => !notice.read).length} size="small">
               <Button type="text" aria-label="Notifications" icon={<BellOutlined />} />
             </Badge>
-          </Dropdown>
+          </AnimatedDropdown>
           <span className="topbar-divider" />
-          <Dropdown
+          <AnimatedDropdown
             trigger={['click']}
             menu={{
               items: [
@@ -121,45 +154,61 @@ export function Topbar({ toggle, onLogout }: { toggle: () => void; onLogout: () 
               onClick: ({ key }) => (key === 'logout' ? onLogout() : navigate(`/${key}`)),
             }}
           >
-            <button className="profile-trigger">
+            <button className="profile-trigger" aria-label="Open user menu">
               <Avatar size={30} className="avatar">
                 {profile.name
                   .split(' ')
-                  .map((n) => n[0])
+                  .map((name) => name[0])
                   .join('')
                   .slice(0, 2)}
               </Avatar>
+              <span className="profile-trigger-copy">
+                <strong>{profile.name}</strong>
+                <small>{org.name}</small>
+              </span>
               <DownOutlined />
             </button>
-          </Dropdown>
+          </AnimatedDropdown>
         </div>
       </header>
-      <Modal title="Search workspace" open={search} onCancel={() => setSearch(false)} footer={null}>
+      <AnimatedModal
+        title="Search workspace"
+        open={search}
+        onCancel={() => setSearch(false)}
+        footer={null}
+        width={560}
+      >
         <Input
           autoFocus
           prefix={<SearchOutlined />}
-          placeholder="Find a page…"
+          placeholder="Find a page, workflow or business area…"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(event) => setQuery(event.target.value)}
           aria-label="Find a page"
         />
         <div className="search-results">
-          {filtered.map((r) => (
+          {filtered.map((route) => (
             <button
-              key={r.path}
+              key={route.path}
               onClick={() => {
-                navigate(r.path);
+                navigate(route.path);
                 setSearch(false);
                 setQuery('');
               }}
             >
-              {r.title}
-              <span>↗</span>
+              <span className="search-result-icon" aria-hidden="true">
+                <ShellIcon name={route.icon} />
+              </span>
+              <span className="search-result-copy">
+                <strong>{route.title}</strong>
+                <small>{route.description}</small>
+              </span>
+              <span className="search-result-group">{route.group}</span>
             </button>
           ))}
-          {!filtered.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+          {!filtered.length && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No matching workspace" />}
         </div>
-      </Modal>
+      </AnimatedModal>
     </>
   );
 }
