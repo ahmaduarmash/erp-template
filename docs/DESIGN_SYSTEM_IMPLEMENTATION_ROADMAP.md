@@ -74,7 +74,7 @@ These are non-negotiable product rules for the implementation.
 - auth/repository boundaries
 - GitHub Pages preview
 
-The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations. Phase 2 now establishes the same centralized contract for motion and feedback.
+The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations. Phase 2 established the centralized contract for motion and feedback. Phase 3 now establishes the scalable enterprise workspace shell and removes the old competing single-sidebar navigation implementation.
 
 ---
 
@@ -134,7 +134,7 @@ We should implement phases sequentially unless a later item is explicitly indepe
 | --- | --- | --- |
 | 1 | Runtime Design Token Engine | [x] |
 | 2 | Motion & Feedback Engine | [x] |
-| 3 | Enterprise Workspace Shell | [ ] |
+| 3 | Enterprise Workspace Shell | [x] |
 | 4 | Core Visual Primitives | [ ] |
 | 5 | Overlay & Interaction Architecture | [ ] |
 | 6 | Enterprise Data Workspace | [ ] |
@@ -493,7 +493,7 @@ Default sound behavior can be finalized during this phase.
 - Existing synthesized Web Audio feedback was audited and retained: sound defaults off, volume remains low, categories are click/success/warning/notification, and no audio assets are introduced.
 - Added automated motion-matrix and runtime CSS/reduced-motion contract tests.
 - Validation: GitHub Actions `npm test` and `npm run build` pass on the Phase 2 code head; the GitHub Pages preview build also passes and deploys through the existing `v2.0` workflow.
-- Scope boundary: Phase 2 did not redesign the workspace shell. Phase 3 remains untouched apart from wiring the existing route outlet through the reusable page-transition primitive.
+- Scope boundary: Phase 2 did not redesign the workspace shell. Phase 3 remained untouched apart from wiring the existing route outlet through the reusable page-transition primitive.
 
 ## Exit Criteria
 
@@ -616,19 +616,36 @@ Improve existing tabs into a real persistent workspace pattern:
 
 ## Tasks
 
-- [ ] Build primary rail
-- [ ] Build secondary nav
-- [ ] Enrich route registry
-- [ ] Rebuild shell grid using layout tokens
-- [ ] Refine header
-- [ ] Upgrade tab bar
-- [ ] Responsive collapse rules
-- [ ] Mobile navigation behavior
-- [ ] Keyboard/focus navigation
+- [x] Build primary rail
+- [x] Build secondary nav
+- [x] Enrich route registry
+- [x] Rebuild shell grid using layout tokens
+- [x] Refine header
+- [x] Upgrade tab bar
+- [x] Responsive collapse rules
+- [x] Mobile navigation behavior
+- [x] Keyboard/focus navigation
+
+## Implementation record — 2026-09-23
+
+- Enriched `src/config/routes.ts` so every workspace route owns its title, description, icon, business-area group, path, permission, and page-kind metadata. Added explicit business-area metadata for Overview, Inventory, Purchasing, Sales, Accounting, Organization, and System.
+- Added `PrimaryRail`, an icon-only major-business-area rail with permission-aware destinations, tooltips, selected-state affordance, and semantic navigation labels.
+- Added `SecondaryNav`, which renders the current business area's title/description and its permission-filtered routes with icon, title, supporting description, selected tint, and active left accent.
+- Rebuilt `AppShell` as a three-column token-driven workspace using `--rail-width`, `--secondary-nav-width`, `--header-height`, and `--tabbar-height`; the secondary column can collapse without changing the primary rail contract.
+- Refined `Topbar` around route metadata. Global search now searches the same permission-aware route registry, while theme, notifications, profile, and logout behaviors remain intact.
+- Added `WorkspaceTabs` with route icons, titles, close actions, selected state, horizontal overflow, predictable adjacent-tab fallback, a 10-tab guard, and persisted/restored tabs through `aster:workspace-tabs:v2`.
+- Responsive behavior now changes the rail + secondary navigation into a single off-canvas navigation workspace below tablet width rather than compressing business content. `Escape` closes mobile navigation; `Ctrl/Cmd+Shift+B` toggles the secondary navigation on desktop; the existing global `Ctrl/Cmd+K` search shortcut remains.
+- Added `src/components/shell/shell.css` as the Phase 3 shell layout layer. It uses runtime semantic/layout/motion tokens and contains no raw theme colors or decorative gradients.
+- Extracted reusable login branding into `Brand.tsx` and removed the obsolete `Sidebar.tsx`, eliminating the competing pre-Phase-3 navigation architecture instead of leaving dead design-system code behind.
+- Added automated shell guard tests for route metadata completeness, business-area defaults, runtime layout-token consumption, motion-token consumption, and inclusion of shell CSS in the no-gradient/no-raw-theme-color constitution test.
+- Validation: GitHub Actions `Validate starter` run `35827651100` passed (`npm test` + TypeScript/Vite production build), and GitHub Pages `Deploy v2.0 preview` run `35827651073` passed for the same Phase 3 code head.
+- Remaining work intentionally belongs to Phase 4+: page-body primitives and module-specific floorplans have not been redesigned inside the shell phase.
 
 ## Exit Criteria
 
 The shell must feel like an enterprise workspace even when the page body contains only an empty state.
+
+**Status: [x] Complete — the application now has an explicit business-area rail, contextual secondary navigation, metadata-driven global context/search, persistent workspace tabs, token-driven desktop/tablet/mobile behavior, keyboard navigation affordances, and passing build/preview gates.**
 
 ---
 
@@ -1533,7 +1550,11 @@ Use this section as work progresses.
 - [x] Delegated restrained press feedback retained; routine table-row stagger removed.
 - [x] Existing synthesized Web Audio feedback audited and retained with sound off by default.
 - [x] Phase 2 validation: motion contract tests, full test suite, TypeScript/Vite build and Pages preview build pass.
-- [ ] Phase 3 intentionally not started per implementation checkpoint. Await explicit continuation before changing the enterprise workspace shell.
+- [x] Phase 3 — Enterprise Workspace Shell completed.
+- [x] Added permission-aware primary rail, contextual secondary navigation, metadata-driven header/search, and persistent route-icon workspace tabs.
+- [x] Shell layout and responsive behavior now consume runtime layout/motion tokens; tablet/mobile navigation is off-canvas and does not squeeze page content.
+- [x] Obsolete single-sidebar implementation removed after shared branding extraction.
+- [x] Phase 3 validation: shell contract tests, full CI build/test run, and GitHub Pages preview deployment all pass.
 
 Future entries should record:
 
@@ -1549,10 +1570,8 @@ YYYY-MM-DD
 
 # 25. Immediate Next Step
 
-Phase 2 is complete and **Phase 3 has not been started**.
+Phases 1–3 are complete. The next sequential phase is:
 
-When implementation is explicitly resumed, the next sequential phase is:
+> **Phase 4 — Core Visual Primitives**
 
-> **Phase 3 — Enterprise Workspace Shell**
-
-Before changing the shell, re-inspect the current `v2.0` implementation and Phase 3 acceptance criteria. Do not begin Phase 3 as part of the Phase 2 completion batch.
+Before creating new primitives, re-inspect the existing `src/components/erp/ErpPrimitives.tsx`, shared CSS, Dashboard, and master-list pages. Reuse and migrate existing useful components rather than creating duplicate primitive APIs.
