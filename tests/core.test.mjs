@@ -178,6 +178,36 @@ test('Legacy CRUD compatibility uses explicit intent while retaining a safe migr
   assert.match(source, /legacy callers/i);
 });
 
+test('Enterprise data workspace exposes the complete master-data contract', () => {
+  const source = readFileSync(new URL('../src/components/data/EnterpriseDataTable.tsx', import.meta.url), 'utf8');
+  for (const capability of [
+    'sticky',
+    'useSearchParams',
+    'DataFilter',
+    'SavedDataView',
+    'BulkAction',
+    "mode?: 'client' | 'server'",
+    'onQueryChange',
+    'showSizeChanger',
+    'AnimatedDropdown',
+    'downloadCsv',
+    'onRefresh',
+    'EmptyState',
+    'virtual=',
+  ]) assert.match(source, new RegExp(capability.replace(/[?+*.^$(){}|[\]\\]/g, '\\$&')));
+});
+
+test('Products validates enterprise table + record drawer + edit modal composition', () => {
+  const source = readFileSync(new URL('../src/pages/inventory/ProductsPage.tsx', import.meta.url), 'utf8');
+  assert.match(source, /EnterpriseDataTable/);
+  assert.match(source, /RecordDrawer/);
+  assert.match(source, /CreateModal/);
+  assert.match(source, /EditModal/);
+  assert.match(source, /filters=\{/);
+  assert.match(source, /savedViews=\{/);
+  assert.match(source, /exportName="products"/);
+});
+
 test('Several thousand rows remain uniquely addressable', () => {
   const seed = seedModule(modules[0]);
   const rows = Array.from({ length: 5000 }, (_, i) => ({
