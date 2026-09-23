@@ -67,12 +67,18 @@ test('all active design-system CSS is guarded against decorative gradients and r
   }
 });
 
-test('legacy global styling no longer competes with the active shell and settings systems', () => {
-  const css = read('src/styles.css');
+test('legacy global styling no longer competes with active shell settings or motion ownership', () => {
+  const globalCss = read('src/styles.css');
+  const compatibilityCss = read('src/design-v2.css');
   for (const legacySelector of ['.sidebar {', '.settings-layout {', '.setting-row {', '.preview-column {', '.page-tabs {']) {
-    assert.equal(css.includes(legacySelector), false, `legacy selector ${legacySelector} must stay removed`);
+    assert.equal(globalCss.includes(legacySelector), false, `legacy selector ${legacySelector} must stay removed`);
   }
-  assert.equal(css.includes('.ant-tabs-nav {'), false, 'global Ant Tabs spacing override must stay removed');
+  for (const legacySelector of ['.sidebar,', '.page-tabs', '.page-tab {', '.nav-link {']) {
+    assert.equal(compatibilityCss.includes(legacySelector), false, `compatibility selector ${legacySelector} must stay removed`);
+  }
+  assert.equal(globalCss.includes('.ant-tabs-nav {'), false, 'global Ant Tabs spacing override must stay removed');
+  assert.equal(compatibilityCss.includes('prefers-reduced-motion'), false, 'reduced-motion veto belongs only to theme/motion.css');
+  assert.equal(/transition[^;]*\b(?:100|110|120|140|160|180|200|300|500)ms\b/.test(compatibilityCss), false, 'compatibility motion must use runtime timing tokens');
 });
 
 test('dead competing workspace implementations stay removed', () => {
@@ -92,16 +98,19 @@ test('icon-first shell and shared actions have accessible names and mobile navig
   assert.match(primitives, /aria-label=\{label\}/);
   assert.match(topbar, /aria-expanded=\{mobileNavigationOpen\}/);
   assert.match(topbar, /aria-controls="shell-navigation"/);
+  assert.equal(topbar.includes('role="listbox"'), false, 'search results must not claim unsupported listbox keyboard semantics');
+  assert.equal(topbar.includes('role="option"'), false, 'search result buttons retain native button semantics');
   assert.match(shell, /id="shell-navigation"/);
   assert.match(documents, /aria-label="Back to document list"/);
   assert.match(documents, /aria-labelledby=\{titleId\}/);
 });
 
-test('responsive contracts cover shell, overlays, data workspaces and documents', () => {
+test('responsive contracts cover shell, overlays, data workspaces, hierarchy and documents', () => {
   const shell = read('src/components/shell/shell.css');
   const overlays = read('src/components/overlays/overlays.css');
   const primitives = read('src/components/primitives/primitives.css');
   const documents = read('src/components/documents/document-workspace.css');
+  const coa = read('src/coa-v2.css');
   assert.match(shell, /@media \(max-width: 980px\)/);
   assert.match(shell, /@media \(max-width: 700px\)/);
   assert.match(overlays, /max-width: 100vw/);
@@ -109,6 +118,8 @@ test('responsive contracts cover shell, overlays, data workspaces and documents'
   assert.match(primitives, /@media \(max-width: 700px\)/);
   assert.match(documents, /@media \(max-width: 960px\)/);
   assert.match(documents, /min-width: 680px/);
+  assert.match(coa, /@media \(max-width: 680px\)/);
+  assert.equal(coa.includes('translateX'), false, 'hierarchy hover must not add decorative movement');
 });
 
 test('enterprise data workspace retains query, edge-state, bulk and server contracts', () => {
@@ -131,7 +142,9 @@ test('enterprise data workspace retains query, edge-state, bulk and server contr
 test('reduced-motion veto remains centralized and covers user preference plus OS preference', () => {
   const motion = read('src/theme/motion.css');
   const styles = read('src/styles.css');
+  const compatibility = read('src/design-v2.css');
   assert.match(motion, /data-motion='off'/);
   assert.match(motion, /prefers-reduced-motion:\s*reduce/);
   assert.equal(styles.includes('prefers-reduced-motion'), false);
+  assert.equal(compatibility.includes('prefers-reduced-motion'), false);
 });

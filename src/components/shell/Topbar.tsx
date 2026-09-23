@@ -179,12 +179,10 @@ export function Topbar({
           onChange={(event) => setQuery(event.target.value)}
           aria-label="Find a page"
         />
-        <div className="search-results" role="listbox" aria-label="Workspace search results">
+        <div className="search-results" aria-label="Workspace search results">
           {filtered.map((route) => (
             <button
               key={route.path}
-              role="option"
-              aria-selected="false"
               onClick={() => {
                 navigate(route.path);
                 setSearch(false);
