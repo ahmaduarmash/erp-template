@@ -101,6 +101,7 @@ test('Runtime CSS contains no decorative gradients or raw hex theme colors', () 
     'src/design-v2.css',
     'src/coa-v2.css',
     'src/journal-v2.css',
+    'src/components/primitives/primitives.css',
     'src/components/shell/shell.css',
     'src/theme/tokens/tailwind.css',
     'src/theme/motion.css',
@@ -126,6 +127,31 @@ test('Enterprise shell consumes runtime layout and motion tokens', () => {
     assert.match(css, new RegExp(`var\\(${token}\\)`));
   assert.match(css, /var\(--motion-micro\)/);
   assert.match(css, /var\(--motion-standard\)/);
+});
+
+test('Shared visual primitive vocabulary is exported and token-driven', () => {
+  const source = readFileSync(new URL('../src/components/primitives/index.tsx', import.meta.url), 'utf8');
+  for (const primitive of [
+    'Surface',
+    'IconChip',
+    'StatCard',
+    'StatusPill',
+    'ActionIcon',
+    'OverflowMenu',
+    'FilterBar',
+    'EmptyState',
+    'SectionHeader',
+    'EntityCell',
+    'MoneyCell',
+    'ProgressCell',
+    'QuickFilterTabs',
+    'Metric',
+    'ObjectHeader',
+    'CommandBar',
+  ]) assert.match(source, new RegExp(`export function ${primitive}\\b`));
+  const css = readFileSync(new URL('../src/components/primitives/primitives.css', import.meta.url), 'utf8');
+  for (const token of ['--bg-surface', '--border-default', '--radius-card', '--text-primary', '--control-height'])
+    assert.match(css, new RegExp(`var\\(${token}\\)`));
 });
 
 test('Every module has unique seed IDs, valid statuses and required fields', () => {
