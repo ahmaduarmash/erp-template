@@ -172,7 +172,7 @@ A phase is complete only when its exit criteria pass and validation is recorded.
 | 5 | Overlay & Interaction Architecture | [x] |
 | 6 | Enterprise Data Workspace | [x] |
 | 7 | Workflow / Approval System | [x] |
-| 8 | Settings & Live Theme Studio | [ ] |
+| 8 | Settings & Live Theme Studio | [x] |
 | 9 | ERP Floorplan / Module Migration | [ ] |
 | 10 | QA, Accessibility & Design-System Enforcement | [ ] |
 
@@ -593,20 +593,20 @@ Make runtime customization feel like a product feature rather than a developer c
 
 ## Target sections
 
-- [ ] Brand
-- [ ] Theme mode
-- [ ] Primary/accent color
-- [ ] Typography
-- [ ] Text size
-- [ ] Density
-- [ ] Radius
-- [ ] Content width
-- [ ] Motion speed
-- [ ] Reduced-motion/effective policy indication
-- [ ] Sound master/category/volume controls
-- [ ] Table defaults
-- [ ] Reset-to-project-defaults
-- [ ] Live preview where useful
+- [x] Brand
+- [x] Theme mode
+- [x] Primary/accent color
+- [x] Typography
+- [x] Text size
+- [x] Density
+- [x] Radius
+- [x] Content width
+- [x] Motion speed
+- [x] Reduced-motion/effective policy indication
+- [x] Sound master/category/volume controls
+- [x] Table defaults
+- [x] Reset-to-project-defaults
+- [x] Live preview where useful
 
 ## Requirements
 
@@ -616,11 +616,42 @@ Make runtime customization feel like a product feature rather than a developer c
 - Invalid/stale persisted values remain safely recoverable through `resolveConfig`.
 - Dark/light preview hierarchy must be professional in both modes.
 
+## Architecture decision
+
+The existing `ThemeProvider`/`resolveConfig`/`template.config.ts` chain remains authoritative. Phase 8 is a productization layer over that engine, not a replacement theme model. Brand identity is now a supported persisted runtime preference, so `resolveConfig` validates brand name/tagline/logo together with the pre-existing theme/layout/motion/sound/table preferences.
+
+OS reduced motion remains an accessibility veto. The studio exposes both the user's configured motion preference and the *effective* motion policy, so a user can understand why animation is disabled without creating a separate accessibility state store.
+
+## Implementation record — 2026-09-23
+
+- Rebuilt `src/pages/Settings.tsx` as a responsive Theme Studio while continuing to call the existing `setGroup()` runtime configuration API.
+- Added live Brand controls for product name, tagline, and logo URL; shell/favicons/runtime consumers continue reading the same resolved `config.brand` object.
+- Extended `resolveConfig` with bounded brand text cleanup and safe logo URL recovery; unsafe schemes and invalid persisted brand values fall back to project defaults.
+- Reused existing mode, primary/accent, typography, text size, density, radius, content width, navigation, motion, sound, notification, and table preference plumbing instead of duplicating it.
+- Added an explicit Effective motion policy indicator using `reducedMotion` + `motionEnabled`, making the OS accessibility veto visible in the product UI.
+- Added a token-driven sticky live preview that reflects brand, typography, colors, radius, density and motion through the same runtime system.
+- Replaced hard-coded settings swatch presets with Ant Design runtime color controls, keeping selected colors project-neutral.
+- Added `src/pages/settings.css` for token-driven, gradient-free, responsive studio layout at desktop/tablet/mobile widths.
+- Surfaced persistence failures with an inline warning while keeping current-session live changes usable.
+- Added `tests/settings.test.mjs` covering safe brand recovery, Phase 8 control coverage, runtime-policy markers, responsive token styling, and gradient/raw-color enforcement.
+- Initial CI correctly caught an older core assertion that treated any persisted brand name as malformed. Because live Brand customization is now an explicit Phase 8 requirement, that assertion was updated to test genuinely invalid brand values (non-string name and unsafe logo scheme) while the new test separately verifies valid brand persistence.
+
+## Validation
+
+- Initial `Validate starter` run **35848265809**: new Phase 8 tests passed; the stale legacy brand assertion failed and stopped the build as intended.
+- Corrected `Validate starter` run **35848518648**: full test suite and production TypeScript/Vite build passed.
+- `Deploy v2.0 preview` run **35848518740**: tests, preview build, artifact upload, and GitHub Pages deployment passed.
+
 ## Exit criteria
 
-A project can be broadly reskinned and density/motion/typography behavior changed live through Settings without feature code changes.
+- [x] Brand/theme/typography/density/radius/content-width/motion/sound/table preferences apply live without rebuild/reload.
+- [x] Settings reuse the single runtime configuration/token engine.
+- [x] Effective reduced-motion policy is visible and OS preference remains authoritative.
+- [x] Invalid/stale persisted values safely recover to project defaults.
+- [x] Studio layout is responsive and token-driven in light/dark runtime modes.
+- [x] CI and Pages gate pass.
 
-**Status: [ ] Not started.**
+**Status: [x] Complete.**
 
 ---
 
@@ -765,12 +796,13 @@ As the design system replaces earlier experimental work:
 - prefer evolution of good existing architecture over rewrites,
 - document architecture changes that alter the original implementation path.
 
-Known migration debt after Phase 7:
+Known migration debt after Phase 8:
 
 - `DataTable` and `DomainTable` still exist for legacy pages; they should delegate to or be retired in favor of the enterprise data-workspace contract during Phase 9. Expenses intentionally retains the existing `DomainTable` list shell while Phase 7 validates workflow behavior rather than table migration.
 - Compatibility CSS aliases remain until affected feature styles are migrated.
 - Generic `ModulePage` remains a compatibility route path for modules that have not yet received their final floorplan; it is not the target architecture for complex ERP documents.
 - Workflow history/ownership currently persist inside demo records so the starter remains self-contained; API-backed projects should map the same model to authoritative server workflow/audit data.
+- Legacy `.settings-*` rules remain in `src/styles.css` during migration, but the Phase 8 studio uses its dedicated token-driven `src/pages/settings.css`; remove obsolete legacy selectors when Phase 9/10 cleanup proves no remaining consumers.
 
 ---
 
@@ -808,22 +840,31 @@ Runtime tokens, motion/feedback, enterprise shell, and shared visual primitives 
 - Fixed a confirmation action path that could otherwise fire before the user confirmed.
 - Added workflow contract/state tests and verified full CI + Pages deployment.
 
+### 2026-09-23 — Phase 8 completed
+
+- Audited the existing Settings, `ThemeProvider`, config schema and persistence path; retained them as the single runtime theme engine.
+- Added live persisted Brand identity, safe persisted-brand recovery, effective reduced-motion visibility, responsive token-driven studio sections, and a live preview.
+- Reused existing theme/layout/motion/sound/table APIs rather than introducing a parallel settings state model.
+- CI caught an outdated assertion that conflicted with the newly documented Brand requirement; the test was corrected to validate genuinely malformed data while retaining safe recovery.
+- Full tests, production build, preview build and GitHub Pages deployment passed.
+
 ---
 
 ## 11. Immediate Next Stage
 
-**Next: Phase 8 — Settings & Live Theme Studio.**
+**Next: Phase 9 — ERP Floorplan / Module Migration.**
 
 Before implementation:
 
-1. inspect the current Settings screen, `ThemeProvider`, runtime config schema, persistence adapter, and any existing settings controls,
-2. compare current controls against every Phase 8 target section before adding UI,
-3. preserve the existing token/config engine as the single source of truth—do not create a second theme model,
-4. identify stale/duplicated settings CSS or controls that should be consolidated into shared primitives,
-5. make all supported changes apply live without rebuild/reload,
-6. expose effective reduced-motion policy and keep sound/table preferences inside the same resolved settings model,
-7. add focused tests for live settings application and safe reset/recovery,
-8. validate light/dark, compact/comfortable, fast/normal motion, CI, and Pages before marking Phase 8 complete.
+1. inspect every routed module and its current page/workspace implementation before assuming migration work is missing,
+2. compare `routeRegistry.pageKind` against actual screen structure and add any missing explicit floorplan classification,
+3. identify which existing `src/pages/erp/*` workspaces are already domain-correct and should be evolved rather than rewritten,
+4. migrate remaining master-data modules to the Phase 6 enterprise data contract where appropriate,
+5. preserve dedicated tree/analytical/document/security/workflow floorplans instead of wrapping them in generic CRUD,
+6. replace direct Ant Design drawers/modals on migrated screens with Phase 5 intent surfaces where the interaction matrix applies,
+7. remove superseded page-specific CSS/components only after their consumers are migrated,
+8. add route/floorplan and real-screen composition tests as each migration group completes,
+9. validate each logical migration batch through tests, TypeScript build, CI and Pages before stacking the next group.
 
 ---
 
