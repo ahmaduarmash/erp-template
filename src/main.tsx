@@ -10,6 +10,7 @@ import './design-v2.css';
 import './coa-v2.css';
 import './journal-v2.css';
 import './components/primitives/primitives.css';
+import './components/overlays/overlays.css';
 import './components/shell/shell.css';
 import './theme/motion.css';
 import App from './App';
