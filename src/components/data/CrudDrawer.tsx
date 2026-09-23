@@ -1,6 +1,6 @@
-import { Button, Space } from 'antd';
+import { Button } from 'antd';
 import type { CrudShellProps } from './CrudModal';
-import { AnimatedDrawer } from '../../lib/motion/overlays';
+import { RecordDrawer } from '../overlays';
 
 export function CrudDrawer({
   open,
@@ -9,25 +9,25 @@ export function CrudDrawer({
   onSave,
   children,
   loading,
-  saveLabel = 'Save changes',
+  saveLabel = 'Edit record',
 }: CrudShellProps) {
   return (
-    <AnimatedDrawer
+    <RecordDrawer
       title={title}
+      subtitle="Inspect this record without leaving the current list context."
       open={open}
       onClose={onCancel}
-      width={560}
-      destroyOnHidden
+      size="md"
       footer={
-        <Space>
+        <div className="record-drawer-footer-actions">
           <Button onClick={onCancel}>Close</Button>
           <Button type="primary" loading={loading} onClick={onSave}>
             {saveLabel}
           </Button>
-        </Space>
+        </div>
       }
     >
       {children}
-    </AnimatedDrawer>
+    </RecordDrawer>
   );
 }
