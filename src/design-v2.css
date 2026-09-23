@@ -235,16 +235,6 @@
   opacity: 0.9;
 }
 
-.erp-kpi {
-  --kpi-accent: var(--action-primary);
-  position: relative;
-  overflow: hidden;
-  border-color: var(--border-default);
-  border-top: 2px solid var(--kpi-accent);
-  background: var(--bg-surface);
-  box-shadow: var(--elevation-xs);
-}
-
 .erp-kpi > strong {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.025em;
