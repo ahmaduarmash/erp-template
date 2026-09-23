@@ -6,10 +6,9 @@ import {
   Input,
   InputNumber,
   Select,
-  Space,
   type TableColumnsType,
 } from 'antd';
-import { FileAddOutlined, PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import { DocumentSection, DocumentSummary, DocumentWorkspace } from '../../components/documents/DocumentWorkspace';
 import { ActionMenu, DomainTable, EntityCell, KpiStrip, MoneyCell, SemanticStatus, WorkflowBar, formatMoney } from '../../components/erp/ErpPrimitives';
 import { PageHeader } from '../../components/shell/PageHeader';
