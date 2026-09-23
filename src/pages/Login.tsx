@@ -1,7 +1,7 @@
 import { Button, Form, Input, Tag } from 'antd';
 import { ArrowRightOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useTemplate } from '../theme/ThemeProvider';
-import { Brand } from '../components/shell/Sidebar';
+import { Brand } from '../components/shell/Brand';
 export default function Login({ onLogin }: { onLogin: (email: string) => void }) {
   const { config } = useTemplate();
   return (
