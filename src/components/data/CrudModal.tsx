@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { CreateModal, EditModal } from '../overlays';
 
+export type CrudIntent = 'create' | 'edit';
+
 export interface CrudShellProps {
   open: boolean;
   title: string;
@@ -9,6 +11,7 @@ export interface CrudShellProps {
   children: ReactNode;
   loading?: boolean;
   saveLabel?: string;
+  intent?: CrudIntent;
 }
 
 export function CrudModal({
@@ -19,8 +22,10 @@ export function CrudModal({
   children,
   loading,
   saveLabel,
+  intent,
 }: CrudShellProps) {
-  const editing = /^edit\b/i.test(title);
+  // Explicit intent is the stable contract. Title inference remains only for legacy callers.
+  const editing = intent ? intent === 'edit' : /^edit\b/i.test(title);
   const Modal = editing ? EditModal : CreateModal;
   return (
     <Modal
