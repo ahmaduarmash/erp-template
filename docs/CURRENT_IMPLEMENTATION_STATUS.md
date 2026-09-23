@@ -1,15 +1,15 @@
 # ERP Template v2.0 — Current Implementation Status
 
-> **Branch:** `v2.0`  
+> **Target branch:** `v2.0`  
+> **Polish branch:** `v2.0-ui-polish`  
 > **Updated:** 2026-09-23  
 > **Roadmap source of truth:** `docs/DESIGN_SYSTEM_IMPLEMENTATION_ROADMAP.md`
 
 ## Overall progress
 
-- **Completed phases:** 6 / 10
-- **Current phase:** Phase 7 — Workflow / Approval System
-- **Current phase status:** Not started; audit is next
-- **Next phase after Phase 7:** Phase 8 — Settings & Live Theme Studio
+- **Completed phases:** 10 / 10
+- **Roadmap status:** Core v2.0 design-system implementation complete
+- **Current work:** Post-roadmap UI polish, compatibility cleanup, and regression hardening
 
 ## Phase status
 
@@ -21,59 +21,64 @@
 | 4 | Core Visual Primitives | Complete |
 | 5 | Overlay & Interaction Architecture | Complete |
 | 6 | Enterprise Data Workspace | Complete |
-| 7 | Workflow / Approval System | Not started |
-| 8 | Settings & Live Theme Studio | Not started |
-| 9 | ERP Floorplan / Module Migration | Not started |
-| 10 | QA, Accessibility & Design-System Enforcement | Not started |
+| 7 | Workflow / Approval System | Complete |
+| 8 | Settings & Live Theme Studio | Complete |
+| 9 | ERP Floorplan / Module Migration | Complete |
+| 10 | QA, Accessibility & Design-System Enforcement | Complete |
 
 ## Completed foundation
 
-### Phase 1 — Runtime Design Token Engine
+### Runtime design system
 
-Runtime palette generation, semantic light/dark tokens, typography, spacing/density, radius, elevation, layout tokens, Ant Design/Tailwind integration, runtime settings support, gradient/raw-theme-color cleanup, and automated token guardrails are complete.
+The runtime token engine owns semantic light/dark color, typography, spacing/density, radius, elevation, layout dimensions, Ant Design mappings, Tailwind mappings, motion timing, runtime settings, and design-system enforcement. Raw shared-theme values and decorative gradients are guarded by automated tests.
 
-### Phase 2 — Motion & Feedback Engine
+### Motion and interaction
 
-Centralized fast motion timing, modal/drawer entry and exit behavior, shared animated overlays, page/tab/list transitions, reduced-motion support, restrained press feedback, and synthesized Web Audio feedback integration are complete.
+The application uses centralized fast motion timing, faster exits than entries, shared animated modal/drawer/popover/dropdown behavior, reduced-motion support, restrained press feedback, and synthesized Web Audio feedback.
 
-### Phase 3 — Enterprise Workspace Shell
+### Enterprise shell and primitives
 
-Business-area rail, contextual secondary navigation, route metadata, token-driven shell grid, global header/search, persistent workspace tabs, responsive navigation, keyboard affordances, and removal of the obsolete competing shell are complete.
+The workspace shell, business-area rail, contextual navigation, global header/search, persistent workspace tabs, responsive navigation, shared primitives, semantic status vocabulary, object headers, command bars, filters, entity cells, KPI surfaces, and hierarchy/document floorplans are established.
 
-### Phase 4 — Core Visual Primitives
+### Overlay architecture
 
-The shared visual vocabulary is complete: `Surface`, `IconChip`, `StatCard`, `StatusPill`, `ActionIcon`, `OverflowMenu`, `FilterBar`, `EmptyState`, `SectionHeader`, `EntityCell`, `MoneyCell`, `ProgressCell`, `QuickFilterTabs`, `Metric`, `ObjectHeader`, and `CommandBar`.
+`CreateModal`, `EditModal`, `RecordDrawer`, `ApprovalDrawer`, and `ConfirmActionPopover` are the shared interaction surfaces. Compatibility CRUD wrappers delegate into those primitives rather than maintaining a separate overlay design system.
 
-### Phase 5 — Overlay & Interaction Architecture
+### Enterprise data workspace
 
-Completed `CreateModal`, `EditModal`, `RecordDrawer`, `ApprovalDrawer`, and `ConfirmActionPopover` with shared token-driven anatomy and Phase 2 motion. Legacy CRUD wrappers delegate into the same architecture. `CrudModal` now supports explicit create/edit intent with a migration-safe title fallback. Products validates list → inspection drawer → edit modal behavior.
+`EnterpriseDataTable` is the forward master-data contract with URL-backed query state, search, structured filters/reset, sticky headers, sorting, pagination, client/server modes, saved views, refresh/export, column visibility, conditional bulk actions, virtualization, and loading/error/empty states.
 
-Validation:
+### ERP floorplans and QA
 
-- `Validate starter` run `35843068978`: passed tests + production build.
-- `Deploy v2.0 preview` run `35843069024`: passed preview build + Pages deployment.
+Workflow, settings/theme studio, ERP-specific floorplans, accessibility checks, responsive contracts, token enforcement, and regression tests are implemented. `DataTable` and a small number of compatibility selectors remain only as migration surfaces for legacy pages.
 
-### Phase 6 — Enterprise Data Workspace
+## Post-roadmap UI polish — 2026-09-23
 
-Added `EnterpriseDataTable` as the forward master-data contract with URL-backed query state, search, structured filters/reset, sticky header, sorting, pagination, client/server data modes, saved views, refresh/export, column visibility, conditional bulk actions, large-list virtualization, and loading/error/empty states. Products is the first real screen migrated to the contract while retaining domain-specific stock, action, drawer, and modal UX.
+A focused visual-polish pass was performed after the 10-phase roadmap completed.
 
-Validation:
+Implemented on `v2.0-ui-polish`:
 
-- foundation/type-fix CI: `35843608209` passed,
-- Products migration CI: `35843739458` passed,
-- Phase 6 contract-test CI: `35843939296` passed,
-- Phase 6 Pages run: `35843939328` passed build + deployment.
+- Added the missing `record-drawer-footer-actions` layout contract.
+- Increased drawer toolbar/header/body breathing room and corrected mobile spacing.
+- Balanced intent-modal header/body/footer rhythm and increased title/icon separation.
+- Scoped modal minimum width to `.intent-modal` instead of globally constraining every Ant Design modal.
+- Consolidated structural `.erp-kpi` ownership into `erp.css`; `design-v2.css` now retains presentation-only KPI typography.
+- Marked legacy ERP toolbar/entity selectors as compatibility surfaces so new code does not expand the old naming system.
+- Added optional context-aware `description` support to `CrudModal` while preserving its existing default copy.
+- Added optional context-aware `subtitle` support to `CrudDrawer` while preserving its existing default copy.
+- Preserved the public `StatusBadge` export but made it delegate to `SemanticStatus`, preventing legacy callers such as Audit Log from breaking while removing the old Tag-based visual implementation.
 
-## Current technical debt / migration notes
+## Current technical-debt / migration notes
 
-- `DataTable` and `DomainTable` remain as compatibility surfaces for unmigrated pages. They should delegate to or be retired in favor of `EnterpriseDataTable` during module migration rather than becoming separate design systems.
-- Compatibility CSS aliases remain only while older modules still need them.
-- Generic `ModulePage` remains a compatibility path for modules without final floorplans; it is not the target for complex ERP documents.
+- `DataTable` and `DomainTable` remain compatibility surfaces. New generic master-data screens should use `EnterpriseDataTable`.
+- `.erp-entity-cell`, `.erp-table-toolbar`, `.erp-security-toolbar`, and related compatibility selectors should not be introduced in new code. Shared primitives and `.ui-*` contracts are the forward design-system surface.
+- Legacy compatibility APIs should be retired only when their remaining call sites have been migrated; avoid breaking removals during visual-polish work.
+- Complex ERP documents must continue using domain-specific document/floorplan components rather than reverting to a generic CRUD page.
 
-## Current quality gate
+## Quality gate
 
-Phase 7 must begin with an audit of existing workflow/review/approval code and should reuse the completed `ApprovalDrawer`, status/object-header primitives, motion engine, and enterprise data-workspace context model. No Phase 7 completion should be recorded until tests, TypeScript/Vite build, CI, and relevant Pages preview validation pass.
+The baseline `v2.0` commit completed the existing GitHub Actions validation and v2.0 preview deployment successfully. Every post-roadmap polish change must continue to pass the repository's `Validate starter` workflow, which runs the automated test suite and production TypeScript/Vite build, before being promoted into `v2.0`.
 
 ## Summary
 
-Confirmed completion is **6 of 10 phases (60%)**. The next implementation stage is **Phase 7 — Workflow / Approval System**.
+The v2.0 roadmap is **10 of 10 phases complete**. Current work is refinement rather than unfinished roadmap implementation: improve visual rhythm, remove CSS ownership ambiguity, preserve migration compatibility, and keep all changes behind the existing automated quality gate.
