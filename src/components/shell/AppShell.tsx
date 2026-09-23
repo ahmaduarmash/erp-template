@@ -1,9 +1,10 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Alert, Button } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Sidebar } from './Sidebar';
+import { Alert } from 'antd';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Topbar } from './Topbar';
+import { PrimaryRail } from './PrimaryRail';
+import { SecondaryNav } from './SecondaryNav';
+import { WorkspaceTabs } from './WorkspaceTabs';
 import { useTemplate } from '../../theme/ThemeProvider';
 import { useWorkspace } from '../../data/WorkspaceProvider';
 import { PageSkeleton } from '../feedback';
@@ -18,65 +19,66 @@ export default function AppShell({ onLogout }: { onLogout: () => void }) {
   useButtonMotion();
   const { config, storageError } = useTemplate();
   const workspace = useWorkspace();
-  const [collapsed, setCollapsed] = useState(config.layout.sidebarDefaultCollapsed);
-  const [mobile, setMobile] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const [tabs, setTabs] = useState(['/dashboard']);
   const sound = useSound();
+  const [secondaryCollapsed, setSecondaryCollapsed] = useState(
+    config.layout.sidebarDefaultCollapsed,
+  );
+  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
 
   useEffect(() => {
-    setTabs((t) => (t.includes(location.pathname) ? t : [...t, location.pathname].slice(-8)));
+    setSecondaryCollapsed(config.layout.sidebarDefaultCollapsed);
+  }, [config.layout.sidebarDefaultCollapsed]);
+
+  useEffect(() => {
+    setMobileNavigationOpen(false);
   }, [location.pathname]);
-  useEffect(
-    () => setCollapsed(config.layout.sidebarDefaultCollapsed),
-    [config.layout.sidebarDefaultCollapsed],
-  );
+
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileNavigationOpen(false);
+      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'b') {
+        event.preventDefault();
+        setSecondaryCollapsed((value) => !value);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   return (
     <div
-      className={`app-shell ${collapsed ? 'is-collapsed' : ''} ${mobile ? 'nav-open' : ''}`}
-      onClickCapture={(e) => {
-        if ((e.target as HTMLElement).closest('button,a')) sound('click');
+      className={`app-shell ${secondaryCollapsed ? 'secondary-collapsed' : ''} ${
+        mobileNavigationOpen ? 'nav-open' : ''
+      }`}
+      onClickCapture={(event) => {
+        if ((event.target as HTMLElement).closest('button,a')) sound('click');
       }}
     >
       <NotificationReceiver />
-      <Sidebar
-        collapsed={collapsed}
-        toggle={() => setCollapsed((s) => !s)}
-        onNavigate={() => setMobile(false)}
-      />
-      {mobile && (
+      <div className="shell-navigation">
+        <PrimaryRail onNavigate={() => setMobileNavigationOpen(false)} />
+        <SecondaryNav
+          collapsed={secondaryCollapsed}
+          onCollapse={() => setSecondaryCollapsed(true)}
+          onNavigate={() => setMobileNavigationOpen(false)}
+        />
+      </div>
+      {mobileNavigationOpen && (
         <button
-          className="sidebar-backdrop"
-          onClick={() => setMobile(false)}
+          className="navigation-backdrop"
+          onClick={() => setMobileNavigationOpen(false)}
           aria-label="Close navigation"
         />
       )}
       <div className="shell-main">
-        <Topbar toggle={() => setMobile((s) => !s)} onLogout={onLogout} />
-        <div className="page-tabs" aria-label="Open pages">
-          {tabs.map((path) => (
-            <div className={`page-tab ${path === location.pathname ? 'selected' : ''}`} key={path}>
-              <NavLink to={path}>
-                {path === '/dashboard' ? 'Overview' : path.split('/').pop()!.replaceAll('-', ' ')}
-              </NavLink>
-              {tabs.length > 1 && (
-                <Button
-                  type="text"
-                  size="small"
-                  aria-label={`Close ${path.split('/').pop()} tab`}
-                  icon={<CloseOutlined />}
-                  onClick={() => {
-                    const next = tabs.filter((p) => p !== path);
-                    setTabs(next);
-                    if (path === location.pathname) navigate(next[next.length - 1]);
-                  }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        <Topbar
+          toggleMobile={() => setMobileNavigationOpen((value) => !value)}
+          toggleSecondary={() => setSecondaryCollapsed((value) => !value)}
+          secondaryCollapsed={secondaryCollapsed}
+          onLogout={onLogout}
+        />
+        <WorkspaceTabs />
         <main className={`main-content ${config.layout.contentWidth === 'boxed' ? 'boxed' : ''}`}>
           {(storageError || workspace.storageError) && (
             <Alert
