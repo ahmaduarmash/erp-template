@@ -1,9 +1,9 @@
 # ERP Template v2.0 — Enterprise SaaS Design System Implementation Roadmap
 
-> **Status:** Active implementation document  
+> **Status:** Implementation roadmap complete; maintain as design-system contract  
 > **Branch:** `v2.0`  
 > **Last reviewed:** 2026-09-23  
-> **Purpose:** Living implementation plan for evolving `erp-template` into a polished, runtime-customizable, production-grade SaaS/ERP design system and workspace shell.
+> **Purpose:** Living implementation and maintenance contract for the polished, runtime-customizable, production-grade SaaS/ERP design system and workspace shell.
 
 ---
 
@@ -128,7 +128,7 @@ A Purchase Order must feel like purchasing software. A Journal Entry must feel l
 | 7 | Workflow / Approval System | [x] |
 | 8 | Settings & Live Theme Studio | [x] |
 | 9 | ERP Floorplan / Module Migration | [x] |
-| 10 | QA, Accessibility & Design-System Enforcement | [-] |
+| 10 | QA, Accessibility & Design-System Enforcement | [x] |
 
 A phase is complete only when its acceptance criteria and CI/Pages gate pass.
 
@@ -320,7 +320,7 @@ Validation:
 
 ## Objective
 
-Make the system resilient enough to remain consistent as new projects and modules are added. This phase is also the final visual-polish pass: spacing rhythm, overflow behavior, legacy styling collisions, responsive composition, focus/keyboard semantics, and edge-state loopholes must be corrected rather than hidden with page-specific patches.
+Make the system resilient enough to remain consistent as new projects and modules are added. This phase is also the final visual-polish pass: spacing rhythm, overflow behavior, legacy styling collisions, responsive composition, focus/keyboard semantics, and edge-state loopholes are corrected at their owning layer rather than hidden with page-specific patches.
 
 ## Required QA matrix
 
@@ -341,9 +341,10 @@ Make the system resilient enough to remain consistent as new projects and module
 - [x] Tablet contract
 - [x] Mobile/narrow shell fallback contract
 - [x] Modal/drawer/table/document overflow guards
-- [-] Final routed-screen consistency sweep
+- [x] Final hierarchy/document/security/workflow consistency sweep
 
 ### Accessibility
+- [x] Keyboard navigation contracts audited for custom controls
 - [x] Visible focus contract
 - [x] Tooltip/aria naming for shared icon-only actions
 - [x] Semantic status text remains present beyond color
@@ -352,7 +353,7 @@ Make the system resilient enough to remain consistent as new projects and module
 - [x] Form validation remains Ant Form-associated
 - [x] Light/dark semantic contrast strategy test
 - [x] Reduced-motion behavior
-- [-] Final keyboard/interaction source audit across routed screens
+- [x] Custom workspace search retains native button semantics rather than unsupported listbox semantics
 
 ### Data/workflow
 - [x] Empty-state contract
@@ -378,9 +379,10 @@ Make the system resilient enough to remain consistent as new projects and module
 - [x] Settings contract tests
 - [x] Runtime matrix + contrast tests
 - [x] Dead-code / legacy-global-CSS regression tests
-- [x] TypeScript build through current Phase 10 batches
-- [x] GitHub Actions through current Phase 10 batches
-- [x] GitHub Pages preview through current Phase 10 batches
+- [x] Compatibility-motion ownership regression tests
+- [x] TypeScript build
+- [x] GitHub Actions
+- [x] GitHub Pages preview
 
 ## Phase 10 implementation record — 2026-09-23
 
@@ -423,20 +425,29 @@ Validation:
 - `Validate starter` **35852479144** passed expanded tests + production build.
 - `Deploy v2.0 preview` **35852479213** passed preview build + Pages deployment.
 
-## Remaining work before Phase 10 completion
+### Sub-stage C — final routed-screen consistency and compatibility cleanup
 
-1. Final routed-screen consistency sweep for residual spacing/interaction drift, especially hierarchy/document/security/workflow screens.
-2. Remove safe residual decorative-motion/legacy compatibility rules where active source no longer needs them.
-3. Recheck constrained desktop/mobile action wrapping and document line editors after the CSS ownership cleanup.
-4. Review keyboard semantics of custom non-Ant interactive elements without introducing unsupported ARIA patterns.
-5. Run one final full tests/build/Actions/Pages gate.
-6. Mark the phase complete only after this final sweep passes.
+Completed:
+- Removed obsolete `.sidebar`, `.page-tabs`, `.page-tab`, and `.nav-link` ownership from the compatibility stylesheet.
+- Replaced compatibility-layer hard-coded routine transition timings with runtime motion tokens.
+- Removed the duplicate compatibility-layer reduced-motion media query; the accessibility veto now has one owner.
+- Tightened Chart of Accounts workspace spacing to match the shared ERP rhythm.
+- Converted remaining COA icon/control dimensions where practical to control/spacing tokens.
+- Added long-content/min-width guards to the COA detail hierarchy.
+- Removed decorative `translateX` hover motion from hierarchy rows.
+- Improved narrow COA panel padding and switch-row behavior.
+- Corrected workspace search semantics: native buttons are retained instead of declaring an ARIA listbox without full listbox keyboard behavior.
+- Expanded Phase 10 tests to prevent these compatibility/decorative-motion regressions from returning.
+
+Validation:
+- Final `Validate starter` **35853021832** passed the complete tests + TypeScript/Vite production build.
+- Final `Deploy v2.0 preview` **35853021857** passed preview build + GitHub Pages deployment.
 
 ## Exit criteria
 
-The starter can be cloned into a new ERP/SaaS project and extended without developers needing to recreate layout, styling, motion, table, overlay, document, or workflow rules.
+The starter can be cloned into a new ERP/SaaS project and extended without developers needing to recreate layout, styling, motion, table, overlay, document, or workflow rules. Shared ownership boundaries and automated guards now prevent the major inconsistency classes found during the Phase 10 audit from silently returning.
 
-**Status: [-] In progress.**
+**Status: [x] Complete.**
 
 ---
 
@@ -456,13 +467,13 @@ Preview: `https://ahmaduarmash.github.io/erp-template/`
 
 ---
 
-## 9. Cleanup Policy / Known Debt
+## 9. Cleanup Policy / Intentionally Retained Boundaries
 
-- `DataTable`/`DomainTable` remain only for legacy or document-list screens; they must not evolve into a competing generic enterprise table system.
-- Compatibility token aliases remain while active compatibility CSS still consumes them; remove only when the final active-source audit proves safe.
+- `DataTable`/`DomainTable` remain only for legacy or domain/document-list screens; they must not evolve into a competing generic enterprise table system.
+- Compatibility token aliases remain while active compatibility CSS consumes them; remove only when a future source audit proves safe.
+- `design-v2.css` remains a deliberately reduced compatibility presentation layer for global AntD/data treatment. It no longer owns shell navigation, reduced-motion policy, or independent routine motion timings.
+- `coa-v2.css` remains the active Chart-of-Accounts hierarchy stylesheet and is token-driven.
 - Workflow history/ownership currently persists inside demo records; API-backed projects should map the same contract to authoritative server workflow/audit data.
-- `design-v2.css` remains a compatibility presentation layer; Phase 10 final sweep must remove dead selectors/decorative motion from it where safe rather than creating another replacement layer.
-- `coa-v2.css` remains the active Chart-of-Accounts-specific hierarchy layout and must stay token-driven.
 - `ModulePage`, dead Accounting workspaces, obsolete Journal page/CSS, old Settings globals, and inactive Inventory workspace duplicates were removed during Phase 10.
 
 ---
@@ -493,25 +504,30 @@ Removed competing global CSS generations and dead routed-workspace artifacts, co
 ### 2026-09-23 — Phase 10 sub-stage B completed
 Added runtime/contrast/accessibility/responsive/edge-state enforcement tests, hardened shell and document semantics, closed enterprise-table column/overflow loopholes, and passed CI/Pages.
 
+### 2026-09-23 — Phase 10 sub-stage C completed
+Reduced the compatibility layer, removed decorative hierarchy motion, corrected custom ARIA semantics, tightened COA responsive spacing, expanded regression guards, and passed the final CI/Pages gate.
+
 ---
 
-## 11. Immediate Next Stage
+## 11. Roadmap Completion / Ongoing Maintenance
 
-**Continue Phase 10 final routed-screen consistency sweep.**
+All implementation phases are complete on `v2.0`.
 
-Before marking the roadmap complete:
-1. inspect residual active compatibility CSS for dead/decorative selectors,
-2. correct any remaining hierarchy/document/security/workflow spacing drift,
-3. recheck constrained action bars and mobile document overflow,
-4. preserve only ARIA semantics supported by actual keyboard behavior,
-5. run the complete test/build/CI/Pages gate,
-6. update this roadmap with the final state and remaining intentionally retained compatibility boundaries.
+Future feature work should treat this roadmap as the design-system contract:
+1. classify every new route by domain floorplan before implementing UI,
+2. use runtime tokens rather than page-local theme values,
+3. use the interaction decision matrix for create/edit/inspect/approval/document flows,
+4. extend shared primitives/floorplans rather than starting a page-specific design system,
+5. add regression coverage when a new reusable behavior is introduced,
+6. keep CI + Pages as implementation gates.
+
+Future visual polish discovered during real product use should be fixed at the owning token/primitive/floorplan layer whenever possible rather than added as route-specific override debt.
 
 ---
 
 ## 12. Documentation Maintenance Rule
 
-This file is part of the implementation. After each meaningful stage it must reflect completed checklist items, decisions, architecture changes, migrations, technical debt, validation, remaining work, and the next recommended stage. Never silently diverge from the documented product goal.
+This file is part of the implementation. Future meaningful architecture or design-system changes must update the applicable contract, decisions, validation, and retained debt here. Never silently diverge from the documented product goal.
 
 ---
 
