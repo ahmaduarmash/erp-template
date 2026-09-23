@@ -1,6 +1,9 @@
+import type { ReactNode } from 'react';
 import { Button } from 'antd';
 import type { CrudShellProps } from './CrudModal';
 import { RecordDrawer } from '../overlays';
+
+type CrudDrawerProps = CrudShellProps & { subtitle?: ReactNode };
 
 export function CrudDrawer({
   open,
@@ -10,11 +13,12 @@ export function CrudDrawer({
   children,
   loading,
   saveLabel = 'Edit record',
-}: CrudShellProps) {
+  subtitle = 'Inspect this record without leaving the current list context.',
+}: CrudDrawerProps) {
   return (
     <RecordDrawer
       title={title}
-      subtitle="Inspect this record without leaving the current list context."
+      subtitle={subtitle}
       open={open}
       onClose={onCancel}
       size="md"
