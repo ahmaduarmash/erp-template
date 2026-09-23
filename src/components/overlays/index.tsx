@@ -1,4 +1,4 @@
-import { cloneElement, useState, type ReactElement, type ReactNode } from 'react';
+import { useState, type ReactElement, type ReactNode } from 'react';
 import { Button, Space } from 'antd';
 import { CheckOutlined, CloseOutlined, ExclamationCircleOutlined, FormOutlined, PlusOutlined } from '@ant-design/icons';
 import { AnimatedDrawer, AnimatedModal, AnimatedPopover } from '../../lib/motion/overlays';
@@ -154,11 +154,7 @@ export function ApprovalDrawer({
   return (
     <RecordDrawer
       {...props}
-      footer={
-        actionPanel ? (
-          <CommandBar primary={actionPanel} />
-        ) : props.footer
-      }
+      footer={actionPanel ? <CommandBar primary={actionPanel} /> : props.footer}
     >
       {props.children}
       {workflow ? <div className="approval-drawer-workflow">{workflow}</div> : null}
@@ -198,13 +194,6 @@ export function ConfirmActionPopover({
       setLoading(false);
     }
   };
-  const trigger = cloneElement(children, {
-    ...children.props,
-    onClick: (event: React.MouseEvent) => {
-      children.props.onClick?.(event);
-      if (!event.defaultPrevented && !disabled) setOpen(true);
-    },
-  });
   return (
     <AnimatedPopover
       open={open}
@@ -229,7 +218,7 @@ export function ConfirmActionPopover({
         </div>
       }
     >
-      {trigger}
+      <span className={`confirm-action-trigger ${disabled ? 'is-disabled' : ''}`}>{children}</span>
     </AnimatedPopover>
   );
 }
