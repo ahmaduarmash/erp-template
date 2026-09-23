@@ -1,2 +1,5 @@
-import { CustomersWorkspace } from '../erp/AccountingWorkspaces';
-export default CustomersWorkspace;
+import PartnerMasterPage from '../erp/PartnerMasterPage';
+
+export default function Customers() {
+  return <PartnerMasterPage kind="customers" />;
+}
