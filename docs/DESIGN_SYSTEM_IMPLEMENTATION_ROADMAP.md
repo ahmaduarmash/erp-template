@@ -74,7 +74,7 @@ These are non-negotiable product rules for the implementation.
 - auth/repository boundaries
 - GitHub Pages preview
 
-The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations. Phase 2 established the centralized contract for motion and feedback. Phase 3 now establishes the scalable enterprise workspace shell and removes the old competing single-sidebar navigation implementation.
+The visual architecture is being corrected incrementally rather than rewritten wholesale. Phase 1 established runtime design tokens as the source of truth while preserving compatibility aliases for existing screens until their scheduled migrations. Phase 2 established the centralized contract for motion and feedback. Phase 3 established the scalable enterprise workspace shell and removed the old competing single-sidebar implementation. Phase 4 now establishes a shared visual vocabulary while preserving compatibility APIs for already-built ERP modules.
 
 ---
 
@@ -135,7 +135,7 @@ We should implement phases sequentially unless a later item is explicitly indepe
 | 1 | Runtime Design Token Engine | [x] |
 | 2 | Motion & Feedback Engine | [x] |
 | 3 | Enterprise Workspace Shell | [x] |
-| 4 | Core Visual Primitives | [ ] |
+| 4 | Core Visual Primitives | [x] |
 | 5 | Overlay & Interaction Architecture | [ ] |
 | 6 | Enterprise Data Workspace | [ ] |
 | 7 | Workflow / Approval System | [ ] |
@@ -639,7 +639,7 @@ Improve existing tabs into a real persistent workspace pattern:
 - Extracted reusable login branding into `Brand.tsx` and removed the obsolete `Sidebar.tsx`, eliminating the competing pre-Phase-3 navigation architecture instead of leaving dead design-system code behind.
 - Added automated shell guard tests for route metadata completeness, business-area defaults, runtime layout-token consumption, motion-token consumption, and inclusion of shell CSS in the no-gradient/no-raw-theme-color constitution test.
 - Validation: GitHub Actions `Validate starter` run `35827651100` passed (`npm test` + TypeScript/Vite production build), and GitHub Pages `Deploy v2.0 preview` run `35827651073` passed for the same Phase 3 code head.
-- Remaining work intentionally belongs to Phase 4+: page-body primitives and module-specific floorplans have not been redesigned inside the shell phase.
+- Remaining work intentionally belongs to Phase 4+: page-body primitives and module-specific floorplans were not redesigned inside the shell phase.
 
 ## Exit Criteria
 
@@ -711,18 +711,33 @@ Small tinted icon chip + strong title + muted explanation + optional action.
 
 ### Additional primitives
 
-- [ ] `SectionHeader`
-- [ ] `EntityCell`
-- [ ] `MoneyCell`
-- [ ] `ProgressCell`
-- [ ] `QuickFilterTabs`
-- [ ] `Metric`
-- [ ] `ObjectHeader`
-- [ ] `CommandBar`
+- [x] `SectionHeader`
+- [x] `EntityCell`
+- [x] `MoneyCell`
+- [x] `ProgressCell`
+- [x] `QuickFilterTabs`
+- [x] `Metric`
+- [x] `ObjectHeader`
+- [x] `CommandBar`
+
+## Implementation record — 2026-09-23
+
+- Added `src/components/primitives/index.tsx` as the shared primitive API with `Surface`, `IconChip`, `StatCard`, `StatusPill`, `ActionIcon`, `OverflowMenu`, `FilterBar`, `EmptyState`, `SectionHeader`, `EntityCell`, `MoneyCell`, `ProgressCell`, `QuickFilterTabs`, `Metric`, `ObjectHeader`, and `CommandBar`.
+- Added `src/components/primitives/primitives.css`; primitive styling is driven by semantic/runtime tokens for surfaces, borders, radius, control size, typography, elevation, and semantic tones. No primitive owns raw theme hex values or decorative gradients.
+- `StatCard` implements the roadmap anatomy with restrained left accent, uppercase micro-label, tabular metric value, contextual `IconChip`, optional progress, semantic trend/hint, and optional footer.
+- `StatusPill` communicates status with text + dot + semantic tone, avoiding color-only state communication at the primitive level.
+- `ActionIcon` and `OverflowMenu` establish the inline-action contract: frequent actions are icon-first with tooltips; less-common actions use icon + text in overflow.
+- Existing `ErpPrimitives.tsx` now routes `EntityCell`, `MoneyCell`, semantic statuses, row actions, quick views, and stock progress through the shared primitives. This preserves existing module APIs while removing a second visual system.
+- Dashboard stat cards now consume `StatCard`, chart loading uses `Surface`, and recent activity uses `Surface` + `SectionHeader`, proving shared primitives against a real screen rather than a showcase-only page.
+- Added automated primitive export/token-contract tests and included `primitives.css` in the global no-gradient/no-raw-theme-color constitution guard.
+- Validation: GitHub Actions `Validate starter` run `35828380946` passed after primitive contract tests were added; GitHub Pages `Deploy v2.0 preview` run `35828380924` also passed for the same head.
+- Migration boundary: legacy page-specific CSS that describes current module layout remains until Phase 6/9; Phase 4 removes primitive duplication without prematurely rewriting domain floorplans.
 
 ## Exit Criteria
 
 Dashboard and list pages should be constructible primarily from shared primitives with minimal page-specific styling.
+
+**Status: [x] Complete — the primitive API covers the required visual vocabulary, ERP helper compatibility is preserved through delegation, the Dashboard consumes the new system, and CI/preview gates pass.**
 
 ---
 
@@ -1555,6 +1570,10 @@ Use this section as work progresses.
 - [x] Shell layout and responsive behavior now consume runtime layout/motion tokens; tablet/mobile navigation is off-canvas and does not squeeze page content.
 - [x] Obsolete single-sidebar implementation removed after shared branding extraction.
 - [x] Phase 3 validation: shell contract tests, full CI build/test run, and GitHub Pages preview deployment all pass.
+- [x] Phase 4 — Core Visual Primitives completed.
+- [x] Shared primitive API and token-driven primitive CSS added; existing ERP cell/status/action helpers now delegate to the same vocabulary.
+- [x] Dashboard migrated to shared stat/surface/section primitives as a real-screen validation.
+- [x] Phase 4 validation: primitive contract tests, full CI build/test run, and GitHub Pages preview deployment all pass.
 
 Future entries should record:
 
@@ -1570,8 +1589,8 @@ YYYY-MM-DD
 
 # 25. Immediate Next Step
 
-Phases 1–3 are complete. The next sequential phase is:
+Phases 1–4 are complete. The next sequential phase is:
 
-> **Phase 4 — Core Visual Primitives**
+> **Phase 5 — Overlay & Interaction Architecture**
 
-Before creating new primitives, re-inspect the existing `src/components/erp/ErpPrimitives.tsx`, shared CSS, Dashboard, and master-list pages. Reuse and migrate existing useful components rather than creating duplicate primitive APIs.
+Before adding wrapper components, inspect the existing animated overlay layer and current CRUD/detail implementations. Reuse Phase 2 motion primitives; Phase 5 should standardize anatomy and intent, not create a second motion system.
