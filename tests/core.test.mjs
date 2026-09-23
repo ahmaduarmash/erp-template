@@ -5,7 +5,7 @@ import { csvCell } from '../src/lib/csv.ts';
 import { resolveConfig } from '../src/theme/resolveConfig.ts';
 import { templateConfig } from '../src/config/template.config.ts';
 import { generateShadeScale, resolveDesignTokens } from '../src/theme/tokens/index.ts';
-import { routeRegistry } from '../src/config/routes.ts';
+import { routeGroups, routeRegistry } from '../src/config/routes.ts';
 import { modules, seedModule } from '../src/data/modules.ts';
 import { validateRecord } from '../src/lib/validation.ts';
 
@@ -101,6 +101,7 @@ test('Runtime CSS contains no decorative gradients or raw hex theme colors', () 
     'src/design-v2.css',
     'src/coa-v2.css',
     'src/journal-v2.css',
+    'src/components/shell/shell.css',
     'src/theme/tokens/tailwind.css',
     'src/theme/motion.css',
   ];
@@ -117,6 +118,14 @@ test('Runtime motion CSS is controlled by token variables and reduced-motion vet
   assert.match(css, /var\(--motion-standard\)/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /data-motion='off'/);
+});
+
+test('Enterprise shell consumes runtime layout and motion tokens', () => {
+  const css = readFileSync(new URL('../src/components/shell/shell.css', import.meta.url), 'utf8');
+  for (const token of ['--rail-width', '--secondary-nav-width', '--header-height', '--tabbar-height'])
+    assert.match(css, new RegExp(`var\\(${token}\\)`));
+  assert.match(css, /var\(--motion-micro\)/);
+  assert.match(css, /var\(--motion-standard\)/);
 });
 
 test('Every module has unique seed IDs, valid statuses and required fields', () => {
@@ -181,4 +190,20 @@ test('ERP routes use domain floorplans instead of one CRUD floorplan', () => {
   assert.equal(byKey.users.pageKind, 'SECURITY');
   for (const key of ['chart-of-accounts', 'journal-entries', 'stock-levels', 'purchase-orders'])
     assert.notEqual(byKey[key].pageKind, 'CRUD');
+});
+
+test('Enterprise navigation metadata is complete and business-area defaults resolve', () => {
+  assert.deepEqual(
+    routeGroups.map((group) => group.key),
+    ['Overview', 'Inventory', 'Purchasing', 'Sales', 'Accounting', 'Organization', 'System'],
+  );
+  const paths = new Set(routeRegistry.map((route) => route.path));
+  for (const route of routeRegistry) {
+    assert.ok(route.title.length > 0, `${route.key} needs a title`);
+    assert.ok(route.description.length > 0, `${route.key} needs a description`);
+    assert.ok(route.icon.length > 0, `${route.key} needs an icon`);
+    assert.ok(route.group.length > 0, `${route.key} needs a group`);
+  }
+  for (const group of routeGroups)
+    assert.ok(paths.has(group.defaultPath), `${group.key} default path must resolve`);
 });
