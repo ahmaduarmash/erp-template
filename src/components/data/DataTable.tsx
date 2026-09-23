@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState, type Key } from 'react';
-import { Button, Input, Space, Table, Tag, Tooltip, type TableColumnsType } from 'antd';
+import { Button, Input, Space, Table, Tooltip, type TableColumnsType } from 'antd';
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -10,24 +10,15 @@ import {
 } from '@ant-design/icons';
 import { ConfirmPopover } from './ConfirmPopover';
 import { EmptyState, PageSkeleton } from '../feedback';
+import { SemanticStatus } from '../erp/ErpPrimitives';
 import { useTemplate } from '../../theme/ThemeProvider';
 import { AnimatedDropdown } from '../../lib/motion/overlays';
 import { downloadCsv } from '../../lib/csv';
 import type { RecordData } from '../../data/modules';
 
-const danger = ['Overdue', 'Failed', 'Suspended', 'Rejected', 'Out of stock'];
-const success = ['Active', 'Paid', 'Completed', 'Received', 'Approved', 'In stock', 'Success'];
-
+// Compatibility export for legacy callers. New surfaces should consume SemanticStatus directly.
 export const StatusBadge = memo(function StatusBadge({ status }: { status: string }) {
-  return (
-    <Tag
-      bordered={false}
-      color={danger.includes(status) ? 'error' : success.includes(status) ? 'success' : 'default'}
-    >
-      <span className="status-dot" />
-      {status}
-    </Tag>
-  );
+  return <SemanticStatus value={status} />;
 });
 
 export interface DataTableProps {
