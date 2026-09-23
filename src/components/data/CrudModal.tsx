@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AnimatedModal } from '../../lib/motion/overlays';
+import { CreateModal, EditModal } from '../overlays';
 
 export interface CrudShellProps {
   open: boolean;
@@ -18,20 +18,22 @@ export function CrudModal({
   onSave,
   children,
   loading,
-  saveLabel = 'Save changes',
+  saveLabel,
 }: CrudShellProps) {
+  const editing = /^edit\b/i.test(title);
+  const Modal = editing ? EditModal : CreateModal;
   return (
-    <AnimatedModal
+    <Modal
       open={open}
       title={title}
+      description={editing ? 'Update the record without leaving your current workspace.' : 'Add a record without losing your current list context.'}
       onCancel={onCancel}
-      onOk={onSave}
-      confirmLoading={loading}
-      okText={saveLabel}
-      width={600}
-      destroyOnHidden
+      onSubmit={onSave}
+      loading={loading}
+      submitLabel={saveLabel}
+      width={640}
     >
       {children}
-    </AnimatedModal>
+    </Modal>
   );
 }
