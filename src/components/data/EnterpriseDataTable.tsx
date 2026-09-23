@@ -82,6 +82,13 @@ function numberParam(value: string | null, fallback: number) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function columnValueKey<T>(column: TableColumnsType<T>[number]) {
+  if ('dataIndex' in column && column.dataIndex !== undefined) {
+    return Array.isArray(column.dataIndex) ? column.dataIndex.join('.') : String(column.dataIndex);
+  }
+  return String(column.key ?? '');
+}
+
 export function EnterpriseDataTable<T extends { id: string }>({
   rows,
   columns,
@@ -219,7 +226,7 @@ export function EnterpriseDataTable<T extends { id: string }>({
       exportColumns.map((column) => String(column.title ?? column.key ?? '')),
       source.map((row) =>
         exportColumns.map((column) => {
-          const key = String(column.dataIndex ?? column.key ?? '');
+          const key = columnValueKey(column);
           return (row as Record<string, unknown>)[key];
         }),
       ),
