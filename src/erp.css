@@ -6,9 +6,13 @@
 }
 
 .erp-kpi {
+  --kpi-accent: var(--action-primary);
   min-width: 0;
+  position: relative;
+  overflow: hidden;
   padding: var(--space-4);
   border: 1px solid var(--border-default);
+  border-top: 2px solid var(--kpi-accent);
   border-radius: var(--radius-card);
   background: var(--bg-surface);
   box-shadow: var(--elevation-xs);
@@ -42,6 +46,7 @@
   overflow: hidden;
 }
 
+/* DEPRECATED compatibility toolbar classes: new generic data surfaces should use .ui-filter-bar. */
 .erp-table-toolbar,
 .erp-security-toolbar {
   display: flex;
@@ -72,6 +77,7 @@
   min-width: 140px;
 }
 
+/* DEPRECATED compatibility entity class: shared entity cells render .ui-entity-cell. */
 .erp-entity-cell,
 .erp-user-profile {
   display: flex;
