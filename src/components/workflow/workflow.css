@@ -21,7 +21,10 @@
 .workflow-route-actor,
 .workflow-route-content time,
 .workflow-route-content p,
-.workflow-reason-panel p,
+.workflow-audit-entry > span,
+.workflow-audit-entry time,
+.workflow-audit-entry p,
+.workflow-reason-popover p,
 .workflow-no-actions {
   color: var(--text-secondary);
   font-size: var(--text-sm);
@@ -29,7 +32,9 @@
 
 .workflow-summary strong,
 .workflow-section-heading strong,
-.workflow-route-content strong {
+.workflow-route-content strong,
+.workflow-audit-entry strong,
+.workflow-reason-popover strong {
   color: var(--text-primary);
 }
 
@@ -37,7 +42,8 @@
   grid-column: 1 / -1;
 }
 
-.workflow-timeline {
+.workflow-timeline,
+.workflow-audit {
   margin-top: var(--space-5);
 }
 
@@ -55,7 +61,8 @@
   gap: var(--space-1);
 }
 
-.workflow-route-list {
+.workflow-route-list,
+.workflow-audit-list {
   position: relative;
   display: grid;
   gap: 0;
@@ -96,7 +103,8 @@
   padding-top: var(--space-1);
 }
 
-.workflow-route-title-row {
+.workflow-route-title-row,
+.workflow-audit-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -115,24 +123,47 @@
   margin-top: var(--space-1);
 }
 
-.workflow-route-content p {
+.workflow-route-content p,
+.workflow-audit-entry p,
+.workflow-reason-popover p {
   margin: var(--space-2) 0 0;
   line-height: 1.5;
 }
 
-.workflow-reason-panel {
-  display: grid;
-  gap: var(--space-3);
-  width: min(100%, 480px);
-  margin-top: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-card);
-  background: var(--bg-surface);
+.workflow-audit-list {
+  gap: var(--space-2);
 }
 
-.workflow-reason-panel p {
-  margin: 0;
+.workflow-audit-entry {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--bg-subtle);
+}
+
+.workflow-audit-heading {
+  align-items: center;
+}
+
+.workflow-audit-entry time {
+  text-align: right;
+}
+
+.workflow-reason-popover {
+  width: min(360px, calc(100vw - var(--space-8)));
+}
+
+.workflow-reason-popover p {
+  margin-bottom: var(--space-3);
+}
+
+.workflow-reason-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .workflow-no-actions {
@@ -149,7 +180,13 @@
     grid-column: auto;
   }
 
-  .workflow-route-title-row {
+  .workflow-route-title-row,
+  .workflow-audit-heading {
+    align-items: flex-start;
     flex-direction: column;
+  }
+
+  .workflow-audit-entry time {
+    text-align: left;
   }
 }
