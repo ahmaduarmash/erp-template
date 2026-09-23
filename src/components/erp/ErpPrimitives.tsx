@@ -1,17 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import {
   Avatar,
-  Button,
-  Dropdown,
   Input,
-  Progress,
-  Segmented,
   Space,
   Statistic,
   Table,
-  Tag,
-  Tooltip,
-  type MenuProps,
   type TableColumnsType,
 } from 'antd';
 import {
@@ -26,7 +19,6 @@ import {
   EyeOutlined,
   FileDoneOutlined,
   FileTextOutlined,
-  MoreOutlined,
   PrinterOutlined,
   ReloadOutlined,
   SearchOutlined,
@@ -36,15 +28,19 @@ import {
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import type { RecordData } from '../../data/modules';
+import {
+  ActionIcon,
+  EntityCell as SharedEntityCell,
+  MoneyCell as SharedMoneyCell,
+  OverflowMenu,
+  ProgressCell,
+  QuickFilterTabs,
+  StatusPill,
+  type OverflowAction,
+  type SemanticTone,
+} from '../primitives';
 
-export type RowAction = {
-  key: string;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-  disabled?: boolean;
-  icon?: ReactNode;
-};
+export type RowAction = OverflowAction;
 
 function actionIcon(key: string): ReactNode {
   const normalized = key.toLowerCase();
@@ -73,26 +69,27 @@ export function formatMoney(value: number | string, currency = 'USD') {
 }
 
 export function MoneyCell({ value, currency = 'USD', muted }: { value: number | string; currency?: string; muted?: boolean }) {
-  return <span className={muted ? 'erp-money muted' : 'erp-money'}>{formatMoney(value, currency)}</span>;
+  return <SharedMoneyCell value={value} currency={currency} muted={muted} />;
 }
 
 export function EntityCell({
   title,
   subtitle,
   initials,
+  onClick,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
   initials?: string;
+  onClick?: () => void;
 }) {
   return (
-    <div className="erp-entity-cell">
-      {initials ? <Avatar size={30}>{initials}</Avatar> : null}
-      <div>
-        <strong>{title}</strong>
-        {subtitle ? <small>{subtitle}</small> : null}
-      </div>
-    </div>
+    <SharedEntityCell
+      title={title}
+      subtitle={subtitle}
+      onClick={onClick}
+      leading={initials ? <Avatar size={30}>{initials}</Avatar> : undefined}
+    />
   );
 }
 
@@ -101,21 +98,16 @@ const warningStatuses = new Set(['Draft', 'Pending', 'Partly Paid', 'Low stock',
 const dangerStatuses = new Set(['Overdue', 'Failed', 'Rejected', 'Cancelled', 'Out of stock', 'Suspended']);
 const infoStatuses = new Set(['Sent', 'Submitted', 'Unpaid']);
 
+function statusTone(value: string): SemanticTone {
+  if (successStatuses.has(value)) return 'success';
+  if (warningStatuses.has(value)) return 'warning';
+  if (dangerStatuses.has(value)) return 'danger';
+  if (infoStatuses.has(value)) return 'info';
+  return 'neutral';
+}
+
 export function SemanticStatus({ value }: { value: string }) {
-  const color = successStatuses.has(value)
-    ? 'success'
-    : warningStatuses.has(value)
-      ? 'warning'
-      : dangerStatuses.has(value)
-        ? 'error'
-        : infoStatuses.has(value)
-          ? 'processing'
-          : 'default';
-  return (
-    <Tag className="erp-status" bordered={false} color={color}>
-      <span className="status-dot" /> {value}
-    </Tag>
-  );
+  return <StatusPill tone={statusTone(value)}>{value}</StatusPill>;
 }
 
 export function ActionMenu({
@@ -125,41 +117,17 @@ export function ActionMenu({
   primary?: { label: string; onClick: () => void; icon?: ReactNode };
   overflow: RowAction[];
 }) {
-  const items: MenuProps['items'] = overflow.map((action) => ({
-    key: action.key,
-    label: action.label,
-    icon: action.icon ?? actionIcon(action.key),
-    danger: action.danger,
-    disabled: action.disabled,
-    onClick: action.onClick,
-  }));
+  const actions = overflow.map((action) => ({ ...action, icon: action.icon ?? actionIcon(action.key) }));
   return (
     <Space size={3}>
       {primary ? (
-        <Tooltip title={primary.label} mouseEnterDelay={0.35}>
-          <Button
-            className="erp-row-action erp-row-action-primary"
-            size="small"
-            type="text"
-            aria-label={primary.label}
-            icon={primary.icon ?? <EyeOutlined />}
-            onClick={primary.onClick}
-          />
-        </Tooltip>
+        <ActionIcon
+          label={primary.label}
+          icon={primary.icon ?? <EyeOutlined />}
+          onClick={primary.onClick}
+        />
       ) : null}
-      {overflow.length ? (
-        <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
-          <Tooltip title="More actions" mouseEnterDelay={0.35}>
-            <Button
-              className="erp-row-action erp-row-action-more"
-              size="small"
-              type="text"
-              aria-label="More actions"
-              icon={<MoreOutlined />}
-            />
-          </Tooltip>
-        </Dropdown>
-      ) : null}
+      <OverflowMenu actions={actions} />
     </Space>
   );
 }
@@ -253,11 +221,7 @@ export function QuickViews({
   onChange: (value: string) => void;
   items: Array<{ label: ReactNode; value: string }>;
 }) {
-  return (
-    <div className="erp-quick-views">
-      <Segmented value={value} onChange={(next) => onChange(String(next))} options={items} />
-    </div>
-  );
+  return <QuickFilterTabs value={value} onChange={onChange} items={items} />;
 }
 
 export function WorkflowBar({ steps, current }: { steps: string[]; current: string }) {
@@ -275,13 +239,7 @@ export function WorkflowBar({ steps, current }: { steps: string[]; current: stri
 }
 
 export function StockProgress({ current, target }: { current: number; target: number }) {
-  const percent = Math.min(100, Math.round((current / Math.max(target, 1)) * 100));
-  return (
-    <div className="erp-progress-cell">
-      <Progress percent={percent} size="small" showInfo={false} status={current <= target ? 'exception' : 'normal'} />
-      <small>{current} / {target}</small>
-    </div>
-  );
+  return <ProgressCell value={current} max={target} status={current <= target ? 'exception' : 'normal'} />;
 }
 
 export function DocumentSummary({
