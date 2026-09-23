@@ -1,26 +1,27 @@
-import { Popconfirm } from 'antd';
-import type { ReactNode } from 'react';
+import type { ReactElement } from 'react';
+import { ConfirmActionPopover } from '../overlays';
+
 export function ConfirmPopover({
   children,
   onConfirm,
   title = 'Delete this record?',
   description = 'This removes the record from this demo workspace.',
 }: {
-  children: ReactNode;
+  children: ReactElement;
   onConfirm: () => void;
   title?: string;
   description?: string;
 }) {
   return (
-    <Popconfirm
+    <ConfirmActionPopover
       title={title}
       description={description}
+      confirmLabel="Delete"
+      cancelLabel="Keep record"
+      danger
       onConfirm={onConfirm}
-      okText="Delete"
-      okButtonProps={{ danger: true }}
-      cancelText="Keep record"
     >
       {children}
-    </Popconfirm>
+    </ConfirmActionPopover>
   );
 }
